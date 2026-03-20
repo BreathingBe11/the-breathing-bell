@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── BACKGROUNDS ── */
+  --color-bg:           #141820;
+  --color-bg-surface:   #1C2028;
+  --color-bg-raised:    #252B35;
+  --color-bg-teal:      #0C8E9E;
+
+  /* ── TEXT ── */
+  --color-text-primary: #FFFFFF;
+  --color-text-body:    #D4DCE0;
+  --color-text-muted:   #8A9AA4;
+  --color-text-ghost:   #3A4550;
+
+  /* ── ACCENT — TEAL ── */
+  --color-accent:       #2AB5C5;
+  --color-accent-dark:  #0C8E9E;
+  --color-accent-glow:  rgba(42, 181, 197, 0.10);
+
+  /* ── BORDERS & DIVIDERS ── */
+  --color-border-strong: #2E3740;
+  --color-border-soft:   #1E2530;
+  --color-border-accent: rgba(42, 181, 197, 0.3);
+
+  /* ── NAV ── */
+  --color-nav-bg:       #1A1E26;
+
+  /* ── TYPOGRAPHY ── */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Tenor Sans', 'Gill Sans', sans-serif;
+
+  /* ── LEGACY ALIASES (keep components working) ── */
+  --background:    var(--color-bg);
+  --foreground:    var(--color-text-primary);
+  --muted:         var(--color-text-muted);
+  --accent:        var(--color-accent);
+  --accent-soft:   var(--color-text-body);
+  --surface:       var(--color-bg-surface);
+  --surface-2:     var(--color-bg-raised);
+  --border:        var(--color-border-strong);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  margin: 0;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 2px;
+}
+
+@keyframes ripple {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+@keyframes bell-sway {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  15%  { transform: rotate(-8deg) translateY(-2px); }
+  30%  { transform: rotate(8deg) translateY(-2px); }
+  45%  { transform: rotate(-5deg) translateY(-1px); }
+  60%  { transform: rotate(5deg) translateY(-1px); }
+  75%  { transform: rotate(-2deg); }
+  90%  { transform: rotate(2deg); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-up  { animation: fade-up  0.8s ease forwards; }
+.animate-fade-in  { animation: fade-in  1s   ease forwards; }
