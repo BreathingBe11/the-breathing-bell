@@ -30,7 +30,15 @@ export default function IntakePage() {
   const totalSessions = getStoredSessionCount()
   const availableDurations = getAvailableDurations(totalSessions)
 
-  function next() {
+  async function next() {
+    // Capture lead email silently on step 1
+    if (step === 1 && name && email && ageRange) {
+      fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, age_range: ageRange }),
+      }).catch(() => {}) // fire and forget — never block the user
+    }
     setStep((s) => s + 1)
   }
 
