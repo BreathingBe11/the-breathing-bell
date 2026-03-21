@@ -71,6 +71,10 @@ export default function IntakePage() {
   }
 
   function back() {
+    if (isLoggedIn && step === 2) {
+      router.push('/dashboard')
+      return
+    }
     setStep((s) => s - 1)
   }
 
