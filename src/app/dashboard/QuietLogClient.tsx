@@ -2,7 +2,9 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Domain, DOMAIN_LABELS, TECHNIQUE_LABELS, STATE_LABELS } from '@/types'
+import { createClient } from '@/lib/supabase/client'
 
 interface SessionRow {
   id: string
@@ -70,7 +72,14 @@ export default function QuietLogClient({
   sessions: SessionRow[]
   profile: ProfileRow | null
 }) {
+  const router = useRouter()
+  const supabase = createClient()
   const streak = calculateStreak(sessions)
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
   const topDomain = getTopDomain(sessions)
   const totalSessions = sessions.length
 
@@ -90,20 +99,29 @@ export default function QuietLogClient({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
+          className="flex items-start justify-between mb-10"
         >
-          <p
-            className="text-xs tracking-[0.25em] uppercase mb-2"
+          <div>
+            <p
+              className="text-xs tracking-[0.25em] uppercase mb-2"
+              style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+            >
+              {profile?.name ?? 'Your'}&apos;s practice
+            </p>
+            <h1
+              className="text-3xl font-medium"
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
+            >
+              The Quiet Log
+            </h1>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="text-xs tracking-[0.15em] uppercase mt-1"
             style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
           >
-            {profile?.name ?? 'Your'}&apos;s practice
-          </p>
-          <h1
-            className="text-3xl font-medium"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
-          >
-            The Quiet Log
-          </h1>
+            Sign out
+          </button>
         </motion.div>
 
         {/* Stats */}
@@ -164,19 +182,25 @@ export default function QuietLogClient({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-center py-16"
+            className="text-center py-16 flex flex-col items-center gap-4"
           >
             <p
-              className="text-lg italic"
-              style={{ color: 'var(--muted)', fontFamily: 'var(--font-display)' }}
+              className="text-2xl italic"
+              style={{ color: 'var(--foreground)', fontFamily: 'var(--font-display)' }}
             >
-              Your log is waiting.
+              Welcome{profile?.name ? `, ${profile.name}` : ''}.
             </p>
             <p
-              className="text-sm mt-2"
+              className="text-sm leading-relaxed max-w-xs"
               style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
             >
-              Complete a session to begin your record.
+              Your Quiet Log is ready. Every session you complete will be recorded here — your techniques, your states, your reflections.
+            </p>
+            <p
+              className="text-sm italic mt-2"
+              style={{ color: 'var(--muted)', fontFamily: 'var(--font-display)' }}
+            >
+              Begin when you&apos;re ready.
             </p>
           </motion.div>
         ) : (

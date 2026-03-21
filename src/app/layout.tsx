@@ -40,7 +40,7 @@ export default function RootLayout({
     <html lang="en" className={`${cormorant.variable} ${tenorSans.variable} h-full`}>
       <body
         className="min-h-full flex flex-col"
-        style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+        style={{ backgroundColor: '#141820', color: 'var(--color-text-primary)' }}
       >
         {children}
       </body>

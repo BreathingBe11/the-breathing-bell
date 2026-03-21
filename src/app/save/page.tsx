@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 import { useSessionStore } from '@/store/sessionStore'
 import { createClient } from '@/lib/supabase/client'
 
-type SaveMode = 'new-user' | 'returning' | 'saving' | 'saved'
+type SaveMode = 'new-user' | 'returning' | 'saving' | 'saved' | 'verify-email'
 
 export default function SavePage() {
   const router = useRouter()
@@ -85,6 +85,12 @@ export default function SavePage() {
       return
     }
 
+    // If no session, email confirmation is required — show verify screen
+    if (!data.session) {
+      setMode('verify-email')
+      return
+    }
+
     // Create profile
     await supabase.from('profiles').insert({
       id: data.user.id,
@@ -110,6 +116,48 @@ export default function SavePage() {
     if (data.user) {
       await handleSaveForUser(data.user.id)
     }
+  }
+
+  if (mode === 'verify-email') {
+    return (
+      <main
+        className="flex flex-col items-center justify-center min-h-screen px-6 text-center"
+        style={{ backgroundColor: '#141820' }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center gap-6 max-w-sm"
+        >
+          <p
+            className="text-3xl"
+            style={{ color: 'var(--accent)' }}
+          >
+            ✉
+          </p>
+          <h2
+            className="text-2xl font-medium"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
+          >
+            Check your email
+          </h2>
+          <p
+            className="text-sm leading-relaxed"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            We sent a verification link to <span style={{ color: 'var(--foreground)' }}>{email}</span>.
+            Click the link to verify your account and your session will be waiting for you.
+          </p>
+          <p
+            className="text-xs tracking-[0.15em] uppercase"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            You can close this tab
+          </p>
+        </motion.div>
+      </main>
+    )
   }
 
   if (mode === 'saving') {

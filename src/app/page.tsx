@@ -111,6 +111,23 @@ export default function LandingPage() {
             </Link>
           </motion.div>
 
+          {/* Sign in link */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.9 }}
+            className="text-xs -mt-4"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            Returning to breathe?{' '}
+            <Link
+              href="/login"
+              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+            >
+              Sign in
+            </Link>
+          </motion.p>
+
           {/* Footer */}
           <motion.p
             initial={{ opacity: 0 }}
@@ -120,6 +137,26 @@ export default function LandingPage() {
             style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
           >
             Body · Business · Belonging
+          </motion.p>
+
+          {/* Copyright */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 2.3 }}
+            className="text-xs"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            Copyright 2026 &copy; Omi Bell &nbsp;·&nbsp;{' '}
+            <a
+              href="https://www.omibell.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+            >
+              www.omibell.com
+            </a>
+            <br />All Rights Reserved.
           </motion.p>
         </div>
       </div>
