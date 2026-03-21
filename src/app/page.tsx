@@ -56,7 +56,7 @@ export default function LandingPage() {
           <img
             src="/The_Breathing_Bell_logo.png"
             alt="The Breathing Bell"
-            style={{ width: '100%', mixBlendMode: 'screen' }}
+            style={{ width: '100%' }}
           />
         </motion.div>
 
