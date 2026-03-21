@@ -25,7 +25,7 @@ export default function LandingPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
           className="relative flex items-center justify-center"
-          style={{ width: 500, height: 273 }}
+          style={{ width: 300, height: 'auto' }}
         >
           {/* Concentric expanding rings */}
           {[0, 1, 2].map((i) => (
@@ -54,14 +54,14 @@ export default function LandingPage() {
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/The_Breathing_Bell_logo.png"
+            src="/BBLogo2.svg"
             alt="The Breathing Bell"
-            style={{ width: '100%' }}
+            style={{ width: '100%', height: 'auto', display: 'block' }}
           />
         </motion.div>
 
         {/* Text content — constrained width */}
-        <div className="flex flex-col items-center gap-8 max-w-sm w-full px-6" style={{ marginTop: '-20px' }}>
+        <div className="flex flex-col items-center gap-8 max-w-sm w-full px-6">
           {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0 }}

@@ -101,19 +101,23 @@ export default function QuietLogClient({
           animate={{ opacity: 1, y: 0 }}
           className="flex items-start justify-between mb-10"
         >
-          <div>
-            <p
-              className="text-xs tracking-[0.25em] uppercase mb-2"
-              style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
-            >
-              {profile?.name ?? 'Your'}&apos;s practice
-            </p>
-            <h1
-              className="text-3xl font-medium"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
-            >
-              The Quiet Log
-            </h1>
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/BBLogo2.svg" alt="The Breathing Bell" style={{ width: 48, height: 'auto' }} />
+            <div>
+              <p
+                className="text-xs tracking-[0.25em] uppercase mb-2"
+                style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+              >
+                {profile?.name ?? 'Your'}&apos;s practice
+              </p>
+              <h1
+                className="text-3xl font-medium"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
+              >
+                The Quiet Log
+              </h1>
+            </div>
           </div>
           <button
             onClick={handleSignOut}
