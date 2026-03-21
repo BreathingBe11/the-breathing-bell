@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSessionStore } from '@/store/sessionStore'
 import { AgeRange, WalkingInState, Domain, Technique, getAvailableDurations } from '@/types'
-
-const STEPS = 4
+import { createClient } from '@/lib/supabase/client'
 
 // Stored total sessions from localStorage for time unlock (pre-auth)
 function getStoredSessionCount(): number {
@@ -17,7 +16,9 @@ function getStoredSessionCount(): number {
 export default function IntakePage() {
   const router = useRouter()
   const { setIntake } = useSessionStore()
+  const supabase = createClient()
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -29,6 +30,33 @@ export default function IntakePage() {
 
   const totalSessions = getStoredSessionCount()
   const availableDurations = getAvailableDurations(totalSessions)
+
+  // If logged in, pre-fill from profile and skip to step 2
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return
+      setIsLoggedIn(true)
+      setEmail(session.user.email ?? '')
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, age_range')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile) {
+        setName(profile.name ?? '')
+        setAgeRange(profile.age_range ?? null)
+      }
+
+      setStep(2)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // For logged-in users, step 2 = display step 1 of 3, etc.
+  const totalSteps = isLoggedIn ? 3 : 4
+  const displayStep = isLoggedIn ? step - 1 : step
 
   async function next() {
     // Capture lead email silently on step 1
@@ -66,12 +94,12 @@ export default function IntakePage() {
       {/* Progress bar */}
       <div className="w-full max-w-sm mb-10">
         <div className="flex gap-1.5">
-          {Array.from({ length: STEPS }).map((_, i) => (
+          {Array.from({ length: totalSteps }).map((_, i) => (
             <div
               key={i}
               className="h-[2px] flex-1 rounded-full transition-all duration-500"
               style={{
-                backgroundColor: i < step ? 'var(--accent)' : 'var(--border)',
+                backgroundColor: i < displayStep ? 'var(--accent)' : 'var(--border)',
               }}
             />
           ))}
@@ -192,7 +220,7 @@ export default function IntakePage() {
                   className="text-xs tracking-[0.2em] uppercase mb-4"
                   style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
                 >
-                  Step 2 of 4
+                  Step {displayStep} of {totalSteps}
                 </p>
                 <h2
                   className="text-2xl font-medium mb-1"
@@ -287,7 +315,7 @@ export default function IntakePage() {
                   className="text-xs tracking-[0.2em] uppercase mb-4"
                   style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
                 >
-                  Step 3 of 4
+                  Step {displayStep} of {totalSteps}
                 </p>
                 <h2
                   className="text-2xl font-medium mb-1"
@@ -392,7 +420,7 @@ export default function IntakePage() {
                   className="text-xs tracking-[0.2em] uppercase mb-4"
                   style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
                 >
-                  Step 4 of 4
+                  Step {displayStep} of {totalSteps}
                 </p>
                 <h2
                   className="text-2xl font-medium mb-1"
