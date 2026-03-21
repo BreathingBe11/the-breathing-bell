@@ -70,7 +70,7 @@ export default function LandingPage() {
             className="text-xs tracking-[0.25em] uppercase"
             style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
           >
-            A breathwork experience by<br />Omi Bell
+            Guided wellness sessions with Omi Bell.
           </motion.p>
 
           {/* Tagline */}
