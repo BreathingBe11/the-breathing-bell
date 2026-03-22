@@ -25,7 +25,7 @@ export default function LandingPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
           className="relative flex items-center justify-center"
-          style={{ width: 300, height: 'auto' }}
+          style={{ width: 'min(300px, 75vw)', height: 'auto' }}
         >
           {/* Concentric expanding rings */}
           {[0, 1, 2].map((i) => (
