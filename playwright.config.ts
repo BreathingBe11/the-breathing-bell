@@ -11,7 +11,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    reducedMotion: 'reduce', // Skips Framer Motion animations — elements immediately interactable
   },
 
   projects: [
