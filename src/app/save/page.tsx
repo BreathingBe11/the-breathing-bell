@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useSessionStore } from '@/store/sessionStore'
 import { createClient } from '@/lib/supabase/client'
+import { TIME_UNLOCK_THRESHOLDS } from '@/types'
 
 type SaveMode = 'new-user' | 'returning' | 'saving' | 'saved' | 'verify-email'
 
@@ -17,6 +18,7 @@ export default function SavePage() {
   const [email, setEmail] = useState(intake.email ?? '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [unlockMessage, setUnlockMessage] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -54,7 +56,19 @@ export default function SavePage() {
 
     // Increment local session count for time unlock
     const count = parseInt(localStorage.getItem('tbb_session_count') || '0', 10)
-    localStorage.setItem('tbb_session_count', String(count + 1))
+    const newCount = count + 1
+    localStorage.setItem('tbb_session_count', String(newCount))
+
+    // Compute next unlock message
+    const next = TIME_UNLOCK_THRESHOLDS.find(t => newCount < t.sessions)
+    if (next) {
+      const needed = next.sessions - newCount
+      setUnlockMessage(
+        needed === 1
+          ? `One more session unlocks ${next.minutes} minutes.`
+          : `${needed} more sessions unlock ${next.minutes} minutes.`
+      )
+    }
 
     setMode('saved')
     resetSession()
@@ -194,7 +208,7 @@ export default function SavePage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-4"
+          className="flex flex-col items-center gap-4 max-w-sm"
         >
           <p
             className="text-xl italic"
@@ -202,8 +216,19 @@ export default function SavePage() {
           >
             Session saved to your Quiet Log.
           </p>
+          {unlockMessage && (
+            <motion.p
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-sm italic"
+              style={{ color: 'var(--muted)', fontFamily: 'var(--font-display)' }}
+            >
+              ✦ {unlockMessage} Keep showing up.
+            </motion.p>
+          )}
           <p
-            className="text-xs tracking-[0.2em] uppercase"
+            className="text-xs tracking-[0.2em] uppercase mt-2"
             style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
           >
             Opening your log...

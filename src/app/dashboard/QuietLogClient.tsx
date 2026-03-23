@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Domain, DOMAIN_LABELS, TECHNIQUE_LABELS, STATE_LABELS } from '@/types'
+import { Domain, DOMAIN_LABELS, TECHNIQUE_LABELS, STATE_LABELS, TIME_UNLOCK_THRESHOLDS } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 
 interface SessionRow {
@@ -89,6 +89,14 @@ export default function QuietLogClient({
     { label: 'Day Streak', value: streak > 0 ? `${streak}` : '0' },
   ]
 
+  const nextUnlock = TIME_UNLOCK_THRESHOLDS.find(t => totalSessions < t.sessions)
+  const prevUnlock = nextUnlock
+    ? TIME_UNLOCK_THRESHOLDS.filter(t => totalSessions >= t.sessions).slice(-1)[0]
+    : null
+  const unlockProgress = nextUnlock && prevUnlock
+    ? ((totalSessions - prevUnlock.sessions) / (nextUnlock.sessions - prevUnlock.sessions)) * 100
+    : 100
+
   return (
     <main
       className="min-h-screen px-6 py-12"
@@ -159,6 +167,39 @@ export default function QuietLogClient({
             </div>
           ))}
         </motion.div>
+
+        {/* Unlock progress */}
+        {nextUnlock && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8 flex flex-col gap-2"
+          >
+            <div className="flex items-center justify-between">
+              <p
+                className="text-xs italic"
+                style={{ color: 'var(--muted)', fontFamily: 'var(--font-display)' }}
+              >
+                ✦ {nextUnlock.sessions - totalSessions === 1
+                  ? `One more session unlocks ${nextUnlock.minutes} minutes.`
+                  : `${nextUnlock.sessions - totalSessions} more sessions unlock ${nextUnlock.minutes} minutes.`} Keep showing up.
+              </p>
+            </div>
+            <div
+              className="h-[2px] w-full rounded-full overflow-hidden"
+              style={{ backgroundColor: 'var(--border)' }}
+            >
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: 'var(--accent)' }}
+                initial={{ width: 0 }}
+                animate={{ width: `${unlockProgress}%` }}
+                transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+              />
+            </div>
+          </motion.div>
+        )}
 
         {/* New session CTA */}
         <motion.div
