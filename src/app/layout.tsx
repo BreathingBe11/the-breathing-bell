@@ -15,20 +15,20 @@ const tenorSans = Tenor_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'The Breathing Bell',
+  title: 'The Breathing Bell — Breathwork App by Omi Bell',
   description:
-    'Guided wellness sessions with Omi Bell. Your nervous system called. Answer it.',
+    'Guided breathwork sessions for your body, business, and sense of belonging. Box breathing, 4-7-8, Double Inhale, and Yoga Nidra — led by Omi Bell.',
   openGraph: {
-    title: 'The Breathing Bell',
-    description: 'Guided wellness sessions with Omi Bell.',
+    title: 'The Breathing Bell — Breathwork App by Omi Bell',
+    description:
+      'Guided breathwork sessions for your body, business, and sense of belonging. Box breathing, 4-7-8, Double Inhale, and Yoga Nidra — led by Omi Bell.',
     type: 'website',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Breathing Bell',
-    description: 'Guided wellness sessions with Omi Bell.',
-    images: ['/opengraph-image'],
+    title: 'The Breathing Bell — Breathwork App by Omi Bell',
+    description:
+      'Guided breathwork sessions for your body, business, and sense of belonging.',
   },
 }
 
