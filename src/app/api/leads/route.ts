@@ -1,5 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 // Simple in-memory rate limiter: max 5 requests per IP per 10 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -47,8 +52,6 @@ export async function POST(req: NextRequest) {
   ) {
     return NextResponse.json({ error: 'Invalid fields' }, { status: 400 })
   }
-
-  const supabase = await createClient()
 
   const { error } = await supabase
     .from('leads')
