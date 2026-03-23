@@ -23,6 +23,7 @@ export default function IntakePage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [emailChecking, setEmailChecking] = useState(false)
   const [ageRange, setAgeRange] = useState<AgeRange | null>(null)
   const [walkingInState, setWalkingInState] = useState<WalkingInState | null>(null)
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -62,12 +63,29 @@ export default function IntakePage() {
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   async function next() {
-    // Validate email format on step 1
+    // Validate email format and MX record on step 1
     if (step === 1) {
       if (!EMAIL_REGEX.test(email)) {
         setEmailError('Please enter a valid email address.')
         return
       }
+      setEmailChecking(true)
+      try {
+        const res = await fetch('/api/validate-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        })
+        const { valid } = await res.json()
+        if (!valid) {
+          setEmailError('That email address doesn\'t look valid. Please check and try again.')
+          setEmailChecking(false)
+          return
+        }
+      } catch {
+        // If check fails, allow through — never block the user over a network error
+      }
+      setEmailChecking(false)
       setEmailError('')
     }
 
@@ -220,18 +238,18 @@ export default function IntakePage() {
 
               <button
                 onClick={next}
-                disabled={!name.trim() || !email.trim() || !ageRange}
+                disabled={!name.trim() || !email.trim() || !ageRange || emailChecking}
                 className="w-full py-4 rounded-full text-sm tracking-[0.15em] uppercase transition-all"
                 style={{
                   backgroundColor:
-                    name.trim() && email.trim() && ageRange ? 'var(--accent)' : 'var(--surface-2)',
+                    name.trim() && email.trim() && ageRange && !emailChecking ? 'var(--accent)' : 'var(--surface-2)',
                   color:
-                    name.trim() && email.trim() && ageRange ? 'var(--background)' : 'var(--muted)',
+                    name.trim() && email.trim() && ageRange && !emailChecking ? 'var(--background)' : 'var(--muted)',
                   fontFamily: 'var(--font-body)',
-                  cursor: name.trim() && email.trim() && ageRange ? 'pointer' : 'not-allowed',
+                  cursor: name.trim() && email.trim() && ageRange && !emailChecking ? 'pointer' : 'not-allowed',
                 }}
               >
-                Continue
+                {emailChecking ? 'Checking...' : 'Continue'}
               </button>
             </motion.div>
           )}
