@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSessionStore } from '@/store/sessionStore'
-import { AgeRange, WalkingInState, Domain, Technique, getAvailableDurations } from '@/types'
+import { AgeRange, WalkingInState, Domain, Technique, getAvailableDurations, TIME_UNLOCK_THRESHOLDS } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 
 // Stored total sessions from localStorage for time unlock (pre-auth)
@@ -553,12 +553,21 @@ export default function IntakePage() {
                       )
                     })}
                   </div>
-                  <p
-                    className="text-xs mt-2"
-                    style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
-                  >
-                    Unlock the next level after 3 sessions
-                  </p>
+                  {(() => {
+                    const next = TIME_UNLOCK_THRESHOLDS.find(t => totalSessions < t.sessions)
+                    if (!next) return null
+                    const sessionsNeeded = next.sessions - totalSessions
+                    return (
+                      <p
+                        className="text-xs mt-2"
+                        style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                      >
+                        {sessionsNeeded === 1
+                          ? `1 more session to unlock ${next.minutes}m`
+                          : `${sessionsNeeded} more sessions to unlock ${next.minutes}m`}
+                      </p>
+                    )
+                  })()}
                 </motion.div>
               )}
 
