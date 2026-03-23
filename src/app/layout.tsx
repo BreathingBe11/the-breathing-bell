@@ -17,11 +17,18 @@ const tenorSans = Tenor_Sans({
 export const metadata: Metadata = {
   title: 'The Breathing Bell',
   description:
-    'A breathwork experience by Omi Bell. Your nervous system called. Answer it.',
+    'Guided wellness sessions with Omi Bell. Your nervous system called. Answer it.',
   openGraph: {
     title: 'The Breathing Bell',
-    description: 'A breathwork experience by Omi Bell.',
+    description: 'Guided wellness sessions with Omi Bell.',
     type: 'website',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Breathing Bell',
+    description: 'Guided wellness sessions with Omi Bell.',
+    images: ['/opengraph-image'],
   },
 }
 
