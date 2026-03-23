@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     .from('leads')
     .upsert(
       { name: name.trim(), email: email.toLowerCase().trim(), age_range },
-      { onConflict: 'email' }
+      { onConflict: 'email', ignoreDuplicates: true }
     )
 
   if (error) {
