@@ -22,6 +22,20 @@ export default function SavePage() {
   const supabase = createClient()
 
   useEffect(() => {
+    // Compute next unlock based on sessions saved so far (pre-save)
+    const count = parseInt(localStorage.getItem('tbb_session_count') || '0', 10)
+    const next = TIME_UNLOCK_THRESHOLDS.find(t => count < t.sessions)
+    if (next) {
+      const needed = next.sessions - count
+      setUnlockMessage(
+        needed === 1
+          ? `One more session unlocks ${next.minutes} minutes.`
+          : `${needed} more sessions unlock ${next.minutes} minutes.`
+      )
+    }
+  }, [])
+
+  useEffect(() => {
     // Check if already signed in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -272,6 +286,14 @@ export default function SavePage() {
                 ? 'Your session is waiting. Create a free account to keep it.'
                 : 'Sign in to save this session to your log.'}
             </p>
+            {unlockMessage && (
+              <p
+                className="text-xs mt-3 italic"
+                style={{ color: 'var(--accent-soft)', fontFamily: 'var(--font-display)' }}
+              >
+                ✦ {unlockMessage} Keep showing up.
+              </p>
+            )}
           </div>
 
           <form
