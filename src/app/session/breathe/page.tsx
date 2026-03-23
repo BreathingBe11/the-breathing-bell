@@ -60,6 +60,8 @@ export default function BreatheSessionPage() {
   if (!intake.technique) return null
 
   const isYogaNidra = intake.technique === 'yoga-nidra'
+  const isSoundBath = intake.technique === 'sound-bath'
+  const useAmbientAnimation = isYogaNidra || isSoundBath
 
   return (
     <main
@@ -117,7 +119,7 @@ export default function BreatheSessionPage() {
             className="flex flex-col items-center gap-6 w-full"
           >
             {/* Main animation */}
-            {isYogaNidra ? (
+            {useAmbientAnimation ? (
               <ChakraFigure durationSeconds={durationSeconds} />
             ) : (
               <BreathingCircle technique={intake.technique} timeRemaining={timeRemaining} />
@@ -161,10 +163,14 @@ export default function BreatheSessionPage() {
         {/* Hidden audio element for Omi's voice */}
         {/* Swap placeholder paths with real recordings when available */}
         <audio ref={audioRef} preload="auto" loop={false}>
-          {isYogaNidra ? (
+          {intake.technique === 'yoga-nidra' ? (
             <source src="/audio/yoga-nidra-guide.mp3" type="audio/mpeg" />
+          ) : intake.technique === 'sound-bath' ? (
+            <source src="/audio/sound-bath-guide.mp3" type="audio/mpeg" />
           ) : intake.technique === '4-7-8' ? (
             <source src="/audio/478-guide.mp3" type="audio/mpeg" />
+          ) : intake.technique === 'double-inhale' ? (
+            <source src="/audio/double-inhale-guide.mp3" type="audio/mpeg" />
           ) : (
             <source src="/audio/box-guide.mp3" type="audio/mpeg" />
           )}

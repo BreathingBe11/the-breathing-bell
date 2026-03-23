@@ -15,11 +15,19 @@ interface Phase {
 function getPhases(technique: Technique): Phase[] {
   if (technique === '4-7-8') {
     return [
-      { label: 'Inhale', duration: 4, direction: 'up' },
-      { label: 'Exhale', duration: 7, direction: 'down' },
-      { label: 'Hold',   duration: 8, direction: 'up' },
+      { label: 'Inhale',   duration: 4, direction: 'up' },
+      { label: 'Exhale',   duration: 7, direction: 'down' },
+      { label: 'Hold',     duration: 8, direction: 'up' },
     ]
   }
+  if (technique === 'double-inhale') {
+    return [
+      { label: 'Inhale',   duration: 4, direction: 'up' },
+      { label: 'Inhale +', duration: 2, direction: 'up' },
+      { label: 'Exhale',   duration: 6, direction: 'down' },
+    ]
+  }
+  // box (default)
   return [
     { label: 'Inhale', duration: 4, direction: 'up' },
     { label: 'Hold',   duration: 4, direction: 'up' },

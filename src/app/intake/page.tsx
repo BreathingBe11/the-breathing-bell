@@ -449,9 +449,19 @@ export default function IntakePage() {
                       desc: '4-4-4-4 — balance and equilibrium',
                     },
                     {
+                      value: 'double-inhale',
+                      label: 'Double Inhale',
+                      desc: 'Cyclic sighing — 2 inhales and one exhale',
+                    },
+                    {
                       value: 'yoga-nidra',
                       label: 'Yoga Nidra',
                       desc: 'Conscious rest — body scan and deep surrender',
+                    },
+                    {
+                      value: 'sound-bath',
+                      label: 'Sound Bath',
+                      desc: 'Immersive sound healing — relax and receive',
                     },
                   ] as { value: Technique; label: string; desc: string }[]
                 ).map(({ value, label, desc }) => (
