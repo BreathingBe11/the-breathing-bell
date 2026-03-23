@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { useSessionStore } from '@/store/sessionStore'
 import BreathingCircle from '@/components/animations/BreathingCircle'
 import ChakraFigure from '@/components/animations/ChakraFigure'
+import RisingParticles from '@/components/animations/RisingParticles'
 import { DOMAIN_LABELS, TECHNIQUE_LABELS } from '@/types'
 
 export default function BreatheSessionPage() {
@@ -61,6 +62,7 @@ export default function BreatheSessionPage() {
 
   const isYogaNidra = intake.technique === 'yoga-nidra'
   const isSoundBath = intake.technique === 'sound-bath'
+  const isDoubleInhale = intake.technique === 'double-inhale'
   const useAmbientAnimation = isYogaNidra || isSoundBath
 
   return (
@@ -121,6 +123,8 @@ export default function BreatheSessionPage() {
             {/* Main animation */}
             {useAmbientAnimation ? (
               <ChakraFigure durationSeconds={durationSeconds} />
+            ) : isDoubleInhale ? (
+              <RisingParticles />
             ) : (
               <BreathingCircle technique={intake.technique} timeRemaining={timeRemaining} />
             )}
