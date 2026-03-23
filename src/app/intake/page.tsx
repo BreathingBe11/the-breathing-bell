@@ -22,6 +22,7 @@ export default function IntakePage() {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
   const [ageRange, setAgeRange] = useState<AgeRange | null>(null)
   const [walkingInState, setWalkingInState] = useState<WalkingInState | null>(null)
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -58,7 +59,18 @@ export default function IntakePage() {
   const totalSteps = isLoggedIn ? 3 : 4
   const displayStep = isLoggedIn ? step - 1 : step
 
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
   async function next() {
+    // Validate email format on step 1
+    if (step === 1) {
+      if (!EMAIL_REGEX.test(email)) {
+        setEmailError('Please enter a valid email address.')
+        return
+      }
+      setEmailError('')
+    }
+
     // Capture lead email silently on step 1
     if (step === 1 && name && email && ageRange) {
       fetch('/api/leads', {
@@ -163,21 +175,28 @@ export default function IntakePage() {
                   onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
                   onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
                 />
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-xl text-base outline-none transition-all"
-                  style={{
-                    backgroundColor: 'var(--surface-2)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--foreground)',
-                    fontFamily: 'var(--font-body)',
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
-                  onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
-                />
+                <div className="flex flex-col gap-1">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setEmailError('') }}
+                    className="w-full px-4 py-3.5 rounded-xl text-base outline-none transition-all"
+                    style={{
+                      backgroundColor: 'var(--surface-2)',
+                      border: `1px solid ${emailError ? '#f87171' : 'var(--border)'}`,
+                      color: 'var(--foreground)',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = emailError ? '#f87171' : 'var(--accent)')}
+                    onBlur={(e) => (e.target.style.borderColor = emailError ? '#f87171' : 'var(--border)')}
+                  />
+                  {emailError && (
+                    <p className="text-xs text-red-400 px-1" style={{ fontFamily: 'var(--font-body)' }}>
+                      {emailError}
+                    </p>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-3 gap-2">
                   {(['18-29', '30-39', '40-49', '50-59', '60+'] as AgeRange[]).map((range) => (
