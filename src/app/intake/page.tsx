@@ -286,7 +286,7 @@ export default function IntakePage() {
                     { value: 'maintaining', label: 'Maintaining', desc: 'Steady. I\'m here to deepen.' },
                     { value: 'wound-up', label: 'Wound Up', desc: 'High energy. I need to release.' },
                     { value: 'overwhelmed', label: 'Overwhelmed', desc: 'Too much. I need stillness.' },
-                    { value: 'on-the-edge', label: 'On the Edge', desc: 'Raw. I need to be witnessed.' },
+                    { value: 'on-the-edge', label: 'On the Edge', desc: 'Running on empty. I need to breathe.' },
                   ] as { value: WalkingInState; label: string; desc: string }[]
                 ).map(({ value, label, desc }) => (
                   <button
