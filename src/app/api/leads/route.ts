@@ -55,12 +55,13 @@ export async function POST(req: NextRequest) {
 
   const { error } = await supabase
     .from('leads')
-    .upsert(
-      { name: name.trim(), email: email.toLowerCase().trim(), age_range },
-      { onConflict: 'email', ignoreDuplicates: true }
-    )
+    .insert({ name: name.trim(), email: email.toLowerCase().trim(), age_range })
 
   if (error) {
+    // Duplicate email — lead already captured, treat as success
+    if (error.code === '23505') {
+      return NextResponse.json({ ok: true })
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 

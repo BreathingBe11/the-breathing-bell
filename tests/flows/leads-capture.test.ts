@@ -3,6 +3,9 @@ import { fillStep1 } from '../helpers/intake'
 
 test.describe('Leads Capture', () => {
   test('POST /api/leads fires with correct payload and returns 200', async ({ page }) => {
+    // Use a unique IP so the in-memory rate limiter (reset only on server restart) is not exhausted by prior tests
+    await page.setExtraHTTPHeaders({ 'x-forwarded-for': `flow-${Date.now()}` })
+
     // Mock validate-email so DNS is not a test dependency
     await page.route('**/api/validate-email', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ valid: true }) })

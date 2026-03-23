@@ -8,12 +8,13 @@ import { Session } from '@/types'
 
 export default function EchoPage() {
   const router = useRouter()
-  const { intake, setCurrentSession } = useSessionStore()
+  const { intake, _hasHydrated, setCurrentSession } = useSessionStore()
   const [echo, setEcho] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   useEffect(() => {
+    if (!_hasHydrated) return
     if (!intake.technique) {
       router.replace('/intake')
       return
@@ -60,7 +61,7 @@ export default function EchoPage() {
     }
 
     fetchEcho()
-  }, [intake, router, setCurrentSession])
+  }, [_hasHydrated, intake, router, setCurrentSession])
 
   return (
     <main

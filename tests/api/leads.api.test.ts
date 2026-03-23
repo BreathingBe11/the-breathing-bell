@@ -1,11 +1,14 @@
 import { test, expect } from '@playwright/test'
 
 const BASE = 'http://localhost:3000'
+let ipCounter = 0
 
+// Each call uses a unique IP so the in-memory rate limiter never triggers
 async function postLeads(body: object) {
+  const ip = `10.0.${Math.floor(ipCounter / 256)}.${ipCounter++ % 256}`
   return fetch(`${BASE}/api/leads`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
     body: JSON.stringify(body),
   })
 }
@@ -14,7 +17,7 @@ test.describe('POST /api/leads', () => {
   test('valid payload returns 200', async () => {
     const res = await postLeads({
       name: 'API Test',
-      email: `apitest+${Date.now()}@gmail.com`, // unique to avoid upsert conflicts
+      email: `apitest+${Date.now()}@gmail.com`,
       age_range: '30-39',
     })
     expect(res.status).toBe(200)
