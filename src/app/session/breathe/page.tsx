@@ -39,7 +39,7 @@ export default function BreatheSessionPage() {
       setTimeRemaining((t) => {
         if (t <= 1) {
           clearInterval(intervalRef.current!)
-          router.push('/session/still')
+          router.push('/session/echo')
           return 0
         }
         return t - 1
