@@ -23,7 +23,6 @@ const TECHNIQUE_CONTEXT: Record<Technique, string> = {
   box: 'box breathing (4-4-4-4) — balance and nervous system equilibrium',
   'yoga-nidra': 'Yoga Nidra — deep conscious rest, surrender at the level of the body',
   'double-inhale': 'Double Inhale / cyclic sighing (2 inhales, 1 long exhale) — rapid nervous system downregulation',
-  'sound-bath': 'Sound Bath — immersive sound healing, passive receptivity and deep presence',
 }
 
 export async function generateEcho({

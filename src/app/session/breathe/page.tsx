@@ -61,9 +61,8 @@ export default function BreatheSessionPage() {
   if (!intake.technique) return null
 
   const isYogaNidra = intake.technique === 'yoga-nidra'
-  const isSoundBath = intake.technique === 'sound-bath'
   const isDoubleInhale = intake.technique === 'double-inhale'
-  const useAmbientAnimation = isYogaNidra || isSoundBath
+  const useAmbientAnimation = isYogaNidra
 
   return (
     <main
@@ -169,8 +168,6 @@ export default function BreatheSessionPage() {
         <audio ref={audioRef} preload="auto" loop={false}>
           {intake.technique === 'yoga-nidra' ? (
             <source src="/audio/yoga-nidra-guide.mp3" type="audio/mpeg" />
-          ) : intake.technique === 'sound-bath' ? (
-            <source src="/audio/sound-bath-guide.mp3" type="audio/mpeg" />
           ) : intake.technique === '4-7-8' ? (
             <source src="/audio/478-guide.mp3" type="audio/mpeg" />
           ) : intake.technique === 'double-inhale' ? (

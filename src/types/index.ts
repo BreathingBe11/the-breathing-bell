@@ -4,7 +4,7 @@ export type WalkingInState = 'maintaining' | 'wound-up' | 'overwhelmed' | 'on-th
 
 export type Domain = 'body' | 'business' | 'belonging'
 
-export type Technique = '4-7-8' | 'box' | 'yoga-nidra' | 'double-inhale' | 'sound-bath'
+export type Technique = '4-7-8' | 'box' | 'yoga-nidra' | 'double-inhale'
 
 export type SubscriptionTier = 'free' | 'bell' | 'bell-annual' | '3b-society' | 'enterprise'
 
@@ -64,7 +64,6 @@ export const TECHNIQUE_LABELS: Record<Technique, string> = {
   box: 'Box Breathing',
   'yoga-nidra': 'Yoga Nidra',
   'double-inhale': 'Double Inhale',
-  'sound-bath': 'Sound Bath',
 }
 
 export const DOMAIN_LABELS: Record<Domain, string> = {
