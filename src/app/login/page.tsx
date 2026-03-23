@@ -27,6 +27,7 @@ export default function LoginPage() {
       return
     }
 
+    fetch('/api/track-login', { method: 'POST' }).catch(() => {})
     router.push('/dashboard')
   }
 

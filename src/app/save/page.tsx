@@ -131,6 +131,7 @@ export default function SavePage() {
     }
 
     if (data.user) {
+      fetch('/api/track-login', { method: 'POST' }).catch(() => {})
       await handleSaveForUser(data.user.id)
     }
   }
