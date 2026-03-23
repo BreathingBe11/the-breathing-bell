@@ -79,8 +79,17 @@ export default function IntakePage() {
   }
 
   function handleBegin() {
-    if (!name || !email || !ageRange || !walkingInState || !domain || !technique || !duration) return
-    setIntake({ name, email, ageRange, walkingInState, domain, technique, durationMinutes: duration })
+    if (!walkingInState || !domain || !technique || !duration) return
+    // For logged-in users, name/email/ageRange may not be on profile yet — use fallbacks
+    setIntake({
+      name: name || 'Guest',
+      email: email || '',
+      ageRange: ageRange || '30-39',
+      walkingInState,
+      domain,
+      technique,
+      durationMinutes: duration,
+    })
     router.push('/session/breathe')
   }
 
