@@ -163,19 +163,23 @@ export default function BreatheSessionPage() {
           {intake.durationMinutes ? ` · ${intake.durationMinutes}m` : ''}
         </p>
 
-        {/* Hidden audio element for Omi's voice */}
-        {/* Swap placeholder paths with real recordings when available */}
-        <audio ref={audioRef} preload="auto" loop={false}>
-          {intake.technique === 'yoga-nidra' ? (
-            <source src="/audio/yoga-nidra-guide.mp3" type="audio/mpeg" />
-          ) : intake.technique === '4-7-8' ? (
-            <source src="/audio/478-guide.mp3" type="audio/mpeg" />
-          ) : intake.technique === 'double-inhale' ? (
-            <source src="/audio/double-inhale-guide.mp3" type="audio/mpeg" />
-          ) : (
-            <source src="/audio/box-guide.mp3" type="audio/mpeg" />
-          )}
-        </audio>
+        {/* Audio — loaded by technique + duration */}
+        {intake.technique && intake.durationMinutes && intake.technique !== 'yoga-nidra' && (
+          <audio key={`${intake.technique}-${intake.durationMinutes}`} ref={audioRef} preload="auto" loop={false}>
+            <source
+              src={`/audio/${intake.technique}/${intake.durationMinutes}min.mp3`}
+              type="audio/mpeg"
+            />
+          </audio>
+        )}
+        {intake.technique === 'yoga-nidra' && intake.durationMinutes && (
+          <audio key={`yoga-nidra-${intake.durationMinutes}`} ref={audioRef} preload="auto" loop={false}>
+            <source
+              src={`/audio/yoga-nidra/${intake.durationMinutes}min.mp3`}
+              type="audio/mpeg"
+            />
+          </audio>
+        )}
       </div>
     </main>
   )
