@@ -16,6 +16,7 @@ export default function BreatheSessionPage() {
   const [started, setStarted] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const startTimeRef = useRef<number | null>(null)
 
   const durationSeconds = (intake.durationMinutes ?? 10) * 60
 
@@ -31,20 +32,21 @@ export default function BreatheSessionPage() {
 
   function startSession() {
     setStarted(true)
-    // Attempt to play audio if available
     if (audioRef.current) {
       audioRef.current.play().catch(() => {})
     }
+    startTimeRef.current = Date.now()
     intervalRef.current = setInterval(() => {
-      setTimeRemaining((t) => {
-        if (t <= 1) {
-          clearInterval(intervalRef.current!)
-          router.push('/session/echo')
-          return 0
-        }
-        return t - 1
-      })
-    }, 1000)
+      const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000)
+      const remaining = durationSeconds - elapsed
+      if (remaining <= 0) {
+        clearInterval(intervalRef.current!)
+        setTimeRemaining(0)
+        router.push('/session/echo')
+      } else {
+        setTimeRemaining(remaining)
+      }
+    }, 500)
   }
 
   useEffect(() => {
