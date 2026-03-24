@@ -552,7 +552,7 @@ export default function IntakePage() {
                     Duration
                   </p>
                   <div className="flex gap-2 flex-wrap">
-                    {([10, 15, 20, 25, 30] as number[]).map((min) => {
+                    {([5, 10, 15, 20, 25, 30] as number[]).map((min) => {
                       const isUnlocked = availableDurations.includes(min)
                       return (
                         <button

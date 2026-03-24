@@ -48,6 +48,7 @@ export interface QuietLogStats {
 
 // Time unlock thresholds based on total sessions completed
 export const TIME_UNLOCK_THRESHOLDS: { sessions: number; minutes: number }[] = [
+  { sessions: 0, minutes: 5 },
   { sessions: 0, minutes: 10 },
   { sessions: 3, minutes: 15 },
   { sessions: 6, minutes: 20 },
