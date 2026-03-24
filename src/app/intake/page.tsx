@@ -509,12 +509,13 @@ export default function IntakePage() {
                             value: '4-7-8' as Technique,
                             label: '4-7-8 Breathing',
                             desc: 'Inhale 4 · Hold 7 · Exhale 8 — deep reset',
+                            membersOnly: true,
                             info: 'Inhale for 4, hold for 7, exhale for 8. The long hold builds CO₂ tolerance; the extended exhale strongly activates the parasympathetic nervous system. More demanding than Box Breathing — the 7-count hold takes practice. Powerful for anxiety, racing thoughts, and trouble falling asleep. This one asks something of you.',
                           },
                         ]
                       : []),
-                  ] as { value: Technique; label: string; desc: string; info: string }[]
-                ).map(({ value, label, desc, info }) => (
+                  ] as { value: Technique; label: string; desc: string; info: string; membersOnly?: boolean }[]
+                ).map(({ value, label, desc, info, membersOnly }) => (
                   <div key={value} className="relative">
                     <button
                       onClick={() => {
@@ -528,14 +529,29 @@ export default function IntakePage() {
                         border: `1px solid ${technique === value ? 'var(--accent)' : 'var(--border)'}`,
                       }}
                     >
-                      <span
-                        className="text-base font-medium pr-7"
-                        style={{
-                          color: technique === value ? 'var(--accent)' : 'var(--foreground)',
-                          fontFamily: 'var(--font-display)',
-                        }}
-                      >
-                        {label}
+                      <span className="flex items-center gap-2 pr-7">
+                        <span
+                          className="text-base font-medium"
+                          style={{
+                            color: technique === value ? 'var(--accent)' : 'var(--foreground)',
+                            fontFamily: 'var(--font-display)',
+                          }}
+                        >
+                          {label}
+                        </span>
+                        {membersOnly && (
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded"
+                            style={{
+                              color: 'var(--accent)',
+                              border: '1px solid var(--accent)',
+                              fontFamily: 'var(--font-body)',
+                              opacity: 0.7,
+                            }}
+                          >
+                            Members
+                          </span>
+                        )}
                       </span>
                       <span
                         className="text-sm mt-0.5"
