@@ -92,14 +92,28 @@ export default function BreatheSessionPage() {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center gap-8"
           >
-            <p
-              className="text-center text-lg italic"
-              style={{ color: 'var(--accent-soft)', fontFamily: 'var(--font-display)' }}
-            >
-              Find a comfortable position.
-              <br />
-              When you&apos;re ready, begin.
-            </p>
+            <div className="flex flex-col items-center gap-4 text-center">
+              <p
+                className="text-lg italic"
+                style={{ color: 'var(--accent-soft)', fontFamily: 'var(--font-display)' }}
+              >
+                Find a comfortable position.
+                <br />
+                When you&apos;re ready, begin.
+              </p>
+              <p
+                className="text-sm leading-relaxed max-w-xs"
+                style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+              >
+                These practices work by activating your parasympathetic nervous system — your body&apos;s built-in reset. Stillness lets them land.
+              </p>
+              <p
+                className="text-xs tracking-wide"
+                style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)', opacity: 0.6 }}
+              >
+                Please be seated or lying down. Not for use while in motion or operating machinery.
+              </p>
+            </div>
             <button
               onClick={startSession}
               className="px-10 py-4 rounded-full text-sm tracking-[0.15em] uppercase transition-all"
