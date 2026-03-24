@@ -556,7 +556,7 @@ export default function IntakePage() {
                     Duration
                   </p>
                   <div className="flex gap-2 flex-wrap">
-                    {([5, 10, 15, 20, 25, 30] as number[]).map((min) => {
+                    {([5, 10, 15, 20, 25, 30] as number[]).filter(min => technique !== 'yoga-nidra' || min >= 10).map((min) => {
                       const isUnlocked = availableDurations.includes(min)
                       return (
                         <button
