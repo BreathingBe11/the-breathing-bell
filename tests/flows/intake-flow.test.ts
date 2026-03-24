@@ -30,9 +30,9 @@ test.describe('Intake Flow', () => {
     await page.getByText('Business').click()
     await page.getByRole('button', { name: /continue/i }).click()
 
-    // Step 4
+    // Step 4 — use Box Breathing (4-7-8 is members-only)
     await expect(page.getByText(/Choose your practice/i)).toBeVisible()
-    await page.getByText('4-7-8 Breathing').click()
+    await page.getByText('Box Breathing').click()
     await page.getByRole('button', { name: '10m', exact: true }).click()
     await page.getByRole('button', { name: /begin/i }).click()
 
@@ -71,7 +71,7 @@ test.describe('Intake Flow', () => {
     await expect(beginBtn).toBeEnabled()
   })
 
-  test('all 4 techniques are visible on step 4', async ({ page }) => {
+  test('3 guest techniques visible on step 4 (4-7-8 is members-only)', async ({ page }) => {
     await page.goto('/intake')
     await fillStep1(page)
     await page.getByRole('button', { name: /continue/i }).click()
@@ -80,9 +80,9 @@ test.describe('Intake Flow', () => {
     await page.getByText('Body').click()
     await page.getByRole('button', { name: /continue/i }).click()
 
-    await expect(page.getByText('4-7-8 Breathing')).toBeVisible()
     await expect(page.getByText('Box Breathing')).toBeVisible()
     await expect(page.getByText('Double Inhale')).toBeVisible()
     await expect(page.getByText('Yoga Nidra')).toBeVisible()
+    await expect(page.getByText('4-7-8 Breathing')).not.toBeVisible()
   })
 })

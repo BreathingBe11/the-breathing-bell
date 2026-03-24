@@ -29,6 +29,7 @@ export default function IntakePage() {
   const [domain, setDomain] = useState<Domain | null>(null)
   const [technique, setTechnique] = useState<Technique | null>(null)
   const [duration, setDuration] = useState<number | null>(null)
+  const [infoOpen, setInfoOpen] = useState<Technique | null>(null)
 
   const totalSessions = getStoredSessionCount()
   const availableDurations = getAvailableDurations(totalSessions)
@@ -488,16 +489,19 @@ export default function IntakePage() {
                       value: 'box',
                       label: 'Box Breathing',
                       desc: '4-4-4-4 — balance and equilibrium',
+                      info: 'Inhale for 4, hold for 4, exhale for 4, hold for 4. One of the most researched breathwork techniques — used by Navy SEALs and first responders to regulate the nervous system under pressure. Builds focus, reduces anxiety, and creates a steady internal rhythm. Great for beginners.',
                     },
                     {
                       value: 'double-inhale',
                       label: 'Double Inhale',
                       desc: 'Cyclic sighing — 2 inhales and one exhale',
+                      info: 'Two inhales through the mouth followed by a slow exhale through the mouth. Stanford research shows this is the most effective real-time stress reduction technique. The double inhale fully inflates the lungs; the extended exhale signals safety to the nervous system. Fast-acting. You\'ll feel it within a few breaths.',
                     },
                     {
                       value: 'yoga-nidra',
                       label: 'Yoga Nidra',
                       desc: 'Conscious rest — body scan and deep surrender',
+                      info: 'You stay awake, but your body enters a state between waking and sleep. Guided by audio, you move awareness through the body — releasing without effort. 20–30 minutes of Yoga Nidra is said to equal 2–4 hours of sleep in restorative value, making it especially powerful for improving sleep quality and recovering from sleep deprivation. You don\'t need to do anything. You may fall asleep. That\'s welcome here.',
                     },
                     ...(isLoggedIn
                       ? [
@@ -505,40 +509,59 @@ export default function IntakePage() {
                             value: '4-7-8' as Technique,
                             label: '4-7-8 Breathing',
                             desc: 'Inhale 4 · Hold 7 · Exhale 8 — deep reset',
+                            info: 'Inhale for 4, hold for 7, exhale for 8. The long hold builds CO₂ tolerance; the extended exhale strongly activates the parasympathetic nervous system. More demanding than Box Breathing — the 7-count hold takes practice. Powerful for anxiety, racing thoughts, and trouble falling asleep. This one asks something of you.',
                           },
                         ]
                       : []),
-                  ] as { value: Technique; label: string; desc: string }[]
-                ).map(({ value, label, desc }) => (
-                  <button
-                    key={value}
-                    onClick={() => {
-                      setTechnique(value)
-                      setDuration(null)
-                    }}
-                    className="flex flex-col items-start px-5 py-4 rounded-xl text-left transition-all"
-                    style={{
-                      backgroundColor:
-                        technique === value ? 'rgba(42,181,197,0.10)' : 'var(--surface-2)',
-                      border: `1px solid ${technique === value ? 'var(--accent)' : 'var(--border)'}`,
-                    }}
-                  >
-                    <span
-                      className="text-base font-medium"
+                  ] as { value: Technique; label: string; desc: string; info: string }[]
+                ).map(({ value, label, desc, info }) => (
+                  <div key={value} className="relative">
+                    <button
+                      onClick={() => {
+                        setTechnique(value)
+                        setDuration(null)
+                      }}
+                      className="w-full flex flex-col items-start px-5 py-4 rounded-xl text-left transition-all"
                       style={{
-                        color: technique === value ? 'var(--accent)' : 'var(--foreground)',
-                        fontFamily: 'var(--font-display)',
+                        backgroundColor:
+                          technique === value ? 'rgba(42,181,197,0.10)' : 'var(--surface-2)',
+                        border: `1px solid ${technique === value ? 'var(--accent)' : 'var(--border)'}`,
                       }}
                     >
-                      {label}
-                    </span>
-                    <span
-                      className="text-sm mt-0.5"
-                      style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                      <span
+                        className="text-base font-medium pr-7"
+                        style={{
+                          color: technique === value ? 'var(--accent)' : 'var(--foreground)',
+                          fontFamily: 'var(--font-display)',
+                        }}
+                      >
+                        {label}
+                      </span>
+                      <span
+                        className="text-sm mt-0.5"
+                        style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                      >
+                        {desc}
+                      </span>
+                    </button>
+                    {/* ⓘ info button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setInfoOpen(value)
+                      }}
+                      className="absolute top-3.5 right-4 flex items-center justify-center w-5 h-5 rounded-full text-xs transition-opacity hover:opacity-100 opacity-50"
+                      style={{
+                        border: '1px solid var(--muted)',
+                        color: 'var(--muted)',
+                        fontFamily: 'var(--font-body)',
+                        lineHeight: 1,
+                      }}
+                      aria-label={`About ${label}`}
                     >
-                      {desc}
-                    </span>
-                  </button>
+                      i
+                    </button>
+                  </div>
                 ))}
               </div>
 
@@ -649,6 +672,65 @@ export default function IntakePage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Technique info modal */}
+      <AnimatePresence>
+        {infoOpen && (() => {
+          const allTechniques = [
+            { value: 'box' as Technique, label: 'Box Breathing', info: 'Inhale for 4, hold for 4, exhale for 4, hold for 4. One of the most researched breathwork techniques — used by Navy SEALs and first responders to regulate the nervous system under pressure. Builds focus, reduces anxiety, and creates a steady internal rhythm. Great for beginners.' },
+            { value: 'double-inhale' as Technique, label: 'Double Inhale', info: 'Two inhales through the mouth followed by a slow exhale through the mouth. Stanford research shows this is the most effective real-time stress reduction technique. The double inhale fully inflates the lungs; the extended exhale signals safety to the nervous system. Fast-acting. You\'ll feel it within a few breaths.' },
+            { value: 'yoga-nidra' as Technique, label: 'Yoga Nidra', info: 'You stay awake, but your body enters a state between waking and sleep. Guided by audio, you move awareness through the body — releasing without effort. 20–30 minutes of Yoga Nidra is said to equal 2–4 hours of sleep in restorative value, making it especially powerful for improving sleep quality and recovering from sleep deprivation. You don\'t need to do anything. You may fall asleep. That\'s welcome here.' },
+            { value: '4-7-8' as Technique, label: '4-7-8 Breathing', info: 'Inhale for 4, hold for 7, exhale for 8. The long hold builds CO₂ tolerance; the extended exhale strongly activates the parasympathetic nervous system. More demanding than Box Breathing — the 7-count hold takes practice. Powerful for anxiety, racing thoughts, and trouble falling asleep. This one asks something of you.' },
+          ]
+          const found = allTechniques.find(t => t.value === infoOpen)
+          if (!found) return null
+          return (
+            <motion.div
+              key="info-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-8"
+              style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+              onClick={() => setInfoOpen(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
+                style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <h3
+                    className="text-lg font-medium"
+                    style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)' }}
+                  >
+                    {found.label}
+                  </h3>
+                  <button
+                    onClick={() => setInfoOpen(null)}
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-sm opacity-50 hover:opacity-100 transition-opacity"
+                    style={{ border: '1px solid var(--muted)', color: 'var(--muted)' }}
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: 'var(--foreground)', fontFamily: 'var(--font-body)' }}
+                >
+                  {found.info}
+                </p>
+              </motion.div>
+            </motion.div>
+          )
+        })()}
+      </AnimatePresence>
     </main>
   )
 }
