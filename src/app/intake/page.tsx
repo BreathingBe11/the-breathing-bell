@@ -485,11 +485,6 @@ export default function IntakePage() {
                 {(
                   [
                     {
-                      value: '4-7-8',
-                      label: '4-7-8 Breathing',
-                      desc: 'Inhale 4 · Hold 7 · Exhale 8 — deep reset',
-                    },
-                    {
                       value: 'box',
                       label: 'Box Breathing',
                       desc: '4-4-4-4 — balance and equilibrium',
@@ -504,6 +499,15 @@ export default function IntakePage() {
                       label: 'Yoga Nidra',
                       desc: 'Conscious rest — body scan and deep surrender',
                     },
+                    ...(isLoggedIn
+                      ? [
+                          {
+                            value: '4-7-8' as Technique,
+                            label: '4-7-8 Breathing',
+                            desc: 'Inhale 4 · Hold 7 · Exhale 8 — deep reset',
+                          },
+                        ]
+                      : []),
                   ] as { value: Technique; label: string; desc: string }[]
                 ).map(({ value, label, desc }) => (
                   <button
