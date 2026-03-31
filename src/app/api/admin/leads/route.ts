@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-function isAuthorized(): boolean {
-  const token = cookies().get('tbb_admin_token')?.value
+async function isAuthorized(): Promise<boolean> {
+  const token = (await cookies()).get('tbb_admin_token')?.value
   return token === process.env.ADMIN_PASSWORD
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!isAuthorized()) {
+  if (!await isAuthorized()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
