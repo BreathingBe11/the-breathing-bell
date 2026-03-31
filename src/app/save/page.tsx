@@ -16,6 +16,8 @@ export default function SavePage() {
   const { currentSession, intake, resetSession } = useSessionStore()
   const [mode, setMode] = useState<SaveMode>('new-user')
   const [email, setEmail] = useState(intake.email ?? '')
+  const [lastName, setLastName] = useState('')
+  const [referralSource, setReferralSource] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [unlockMessage, setUnlockMessage] = useState<string | null>(null)
@@ -126,8 +128,10 @@ export default function SavePage() {
     await supabase.from('profiles').insert({
       id: data.user.id,
       name: currentSession.name,
+      last_name: lastName.trim() || null,
       age_range: currentSession.ageRange,
       subscription_tier: 'free',
+      referral_source: referralSource || null,
     })
 
     // Send member welcome email (fire and forget)
@@ -307,6 +311,23 @@ export default function SavePage() {
             onSubmit={mode === 'new-user' ? handleSignUp : handleSignIn}
             className="flex flex-col gap-4"
           >
+            {mode === 'new-user' && (
+              <input
+                type="text"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
+                style={{
+                  backgroundColor: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--foreground)',
+                  fontFamily: 'var(--font-body)',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+              />
+            )}
             <input
               type="email"
               placeholder="Email"
@@ -340,6 +361,30 @@ export default function SavePage() {
               onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
               onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
             />
+
+            {mode === 'new-user' && (
+              <select
+                value={referralSource}
+                onChange={(e) => setReferralSource(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
+                style={{
+                  backgroundColor: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
+                  color: referralSource ? 'var(--foreground)' : 'var(--muted)',
+                  fontFamily: 'var(--font-body)',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+              >
+                <option value="">How did you hear about us?</option>
+                <option value="from-omi">From Omi</option>
+                <option value="family-friend">Family member / Friend</option>
+                <option value="social-media">Social Media</option>
+                <option value="bgv">BGV</option>
+                <option value="ad">Ad</option>
+                <option value="other">Other</option>
+              </select>
+            )}
 
             {error && (
               <p className="text-sm text-red-400" style={{ fontFamily: 'var(--font-body)' }}>
