@@ -54,7 +54,7 @@ export default function LandingPage() {
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/BBLogo2.svg"
+            src="/BBLogo2.png"
             alt="The Breathing Bell"
             style={{ width: '100%', height: 'auto', display: 'block' }}
           />
