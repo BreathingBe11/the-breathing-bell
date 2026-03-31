@@ -16,6 +16,7 @@ export default function SavePage() {
   const { currentSession, intake, resetSession } = useSessionStore()
   const [mode, setMode] = useState<SaveMode>('new-user')
   const [email, setEmail] = useState(intake.email ?? '')
+  const [firstName, setFirstName] = useState(intake.name ?? '')
   const [lastName, setLastName] = useState('')
   const [referralSource, setReferralSource] = useState('')
   const [password, setPassword] = useState('')
@@ -127,7 +128,7 @@ export default function SavePage() {
     // Create profile
     await supabase.from('profiles').insert({
       id: data.user.id,
-      name: currentSession.name,
+      name: firstName.trim() || currentSession.name,
       last_name: lastName.trim() || null,
       age_range: currentSession.ageRange,
       subscription_tier: 'free',
@@ -312,21 +313,38 @@ export default function SavePage() {
             className="flex flex-col gap-4"
           >
             {mode === 'new-user' && (
-              <input
-                type="text"
-                placeholder="Last name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
-                style={{
-                  backgroundColor: 'var(--surface-2)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--foreground)',
-                  fontFamily: 'var(--font-body)',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
-              />
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="First name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="flex-1 px-4 py-3.5 rounded-xl text-base outline-none"
+                  style={{
+                    backgroundColor: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--foreground)',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                  onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+                />
+                <input
+                  type="text"
+                  placeholder="Last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="flex-1 px-4 py-3.5 rounded-xl text-base outline-none"
+                  style={{
+                    backgroundColor: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--foreground)',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                  onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+                />
+              </div>
             )}
             <input
               type="email"
