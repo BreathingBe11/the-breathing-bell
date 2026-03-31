@@ -34,7 +34,7 @@ const cell = 'px-4 py-3 text-left text-xs whitespace-nowrap'
 const headerCell = `${cell} font-semibold uppercase tracking-[0.1em]`
 
 export default function AdminDashboardClient({
-  leads,
+  leads: initialLeads,
   members,
 }: {
   leads: Lead[]
@@ -42,6 +42,21 @@ export default function AdminDashboardClient({
 }) {
   const router = useRouter()
   const [tab, setTab] = useState<'leads' | 'members'>('leads')
+  const [leads, setLeads] = useState<Lead[]>(initialLeads)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function handleDeleteLead(id: string) {
+    setDeleting(id)
+    const res = await fetch('/api/admin/leads', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (res.ok) {
+      setLeads((prev) => prev.filter((l) => l.id !== id))
+    }
+    setDeleting(null)
+  }
 
   async function handleSignOut() {
     await fetch('/api/admin/auth', { method: 'DELETE' })
@@ -107,7 +122,7 @@ export default function AdminDashboardClient({
             <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
               <thead style={{ backgroundColor: '#1a2030' }}>
                 <tr>
-                  {['Name', 'Email', 'Age Range', 'Date Joined'].map((h) => (
+                  {['Name', 'Email', 'Age Range', 'Date Joined', ''].map((h) => (
                     <th key={h} className={headerCell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{h}</th>
                   ))}
                 </tr>
@@ -131,6 +146,20 @@ export default function AdminDashboardClient({
                     <td className={cell} style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>{lead.email}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{lead.age_range}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{formatDate(lead.created_at)}</td>
+                    <td className={cell}>
+                      <button
+                        onClick={() => handleDeleteLead(lead.id)}
+                        disabled={deleting === lead.id}
+                        style={{
+                          color: deleting === lead.id ? '#7a8a99' : '#f87171',
+                          fontFamily: 'monospace',
+                          fontSize: '0.7rem',
+                          opacity: deleting === lead.id ? 0.5 : 1,
+                        }}
+                      >
+                        {deleting === lead.id ? 'removing…' : 'Delete'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
