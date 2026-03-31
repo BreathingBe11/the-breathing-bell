@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -64,6 +65,17 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  // Enroll in lead drip sequence (fire and forget)
+  const cleanName = name.trim()
+  const cleanEmail = email.toLowerCase().trim()
+  const admin = createAdminClient()
+  const now = Date.now()
+  admin.from('email_drip_queue').insert([
+    { email: cleanEmail, name: cleanName, sequence_type: 'lead', step: 1, send_at: new Date(now).toISOString() },
+    { email: cleanEmail, name: cleanName, sequence_type: 'lead', step: 2, send_at: new Date(now + 2 * 24 * 60 * 60 * 1000).toISOString() },
+    { email: cleanEmail, name: cleanName, sequence_type: 'lead', step: 3, send_at: new Date(now + 5 * 24 * 60 * 60 * 1000).toISOString() },
+  ]).then(() => {}).catch(() => {})
 
   return NextResponse.json({ ok: true })
 }

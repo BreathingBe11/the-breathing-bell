@@ -130,6 +130,13 @@ export default function SavePage() {
       subscription_tier: 'free',
     })
 
+    // Send member welcome email (fire and forget)
+    fetch('/api/email/welcome-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name: currentSession.name }),
+    }).catch(() => {})
+
     await handleSaveForUser(data.user.id)
   }
 

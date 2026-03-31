@@ -62,3 +62,24 @@ create or replace function public.get_session_count(user_uuid uuid)
 returns int as $$
   select count(*)::int from public.sessions where user_id = user_uuid;
 $$ language sql security definer;
+
+-- Leads table (captures unauthenticated intake form submissions)
+create table if not exists public.leads (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null unique,
+  age_range text not null,
+  created_at timestamptz default now()
+);
+
+alter table public.leads enable row level security;
+
+-- Allow anyone (including unauthenticated users) to insert leads
+create policy "Anyone can insert leads"
+  on public.leads for insert
+  with check (true);
+
+-- Only service role can read leads (protects your list)
+create policy "Service role can read leads"
+  on public.leads for select
+  using (auth.role() = 'service_role');
