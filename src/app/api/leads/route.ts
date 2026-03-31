@@ -71,11 +71,11 @@ export async function POST(req: NextRequest) {
   const cleanEmail = email.toLowerCase().trim()
   const admin = createAdminClient()
   const now = Date.now()
-  admin.from('email_drip_queue').insert([
+  void Promise.resolve(admin.from('email_drip_queue').insert([
     { email: cleanEmail, name: cleanName, sequence_type: 'lead', step: 1, send_at: new Date(now).toISOString() },
     { email: cleanEmail, name: cleanName, sequence_type: 'lead', step: 2, send_at: new Date(now + 2 * 24 * 60 * 60 * 1000).toISOString() },
     { email: cleanEmail, name: cleanName, sequence_type: 'lead', step: 3, send_at: new Date(now + 5 * 24 * 60 * 60 * 1000).toISOString() },
-  ]).then(() => {}).catch(() => {})
+  ])).catch(() => {})
 
   return NextResponse.json({ ok: true })
 }
