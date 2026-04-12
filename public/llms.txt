@@ -1,0 +1,28 @@
+# The Breathing Bell
+> A guided breathwork and yoga nidra web app for nervous system regulation, stress relief, and deep sleep. Created by Omi Bell, certified breathwork practitioner and founder of The 3B Society.
+
+## What it does
+The Breathing Bell offers guided breathwork and yoga nidra sessions organised around three pillars: Body (nervous system regulation and physical rest), Business (focus and mental clarity for high-performers and entrepreneurs), and Belonging (connection and community care).
+
+Sessions are personalised based on how the user is feeling — maintaining, wound up, overwhelmed, or on the edge — and what area of life they want to address. Techniques include Box Breathing (4-4-4-4), Double Inhale (cyclic sighing), Yoga Nidra (guided conscious rest), and 4-7-8 Breathing (members only).
+
+## Who it's for
+Anyone seeking stress relief, better sleep, nervous system regulation, or deep relaxation — from overwhelmed professionals to curious beginners who have never tried breathwork before. Particularly useful for entrepreneurs, business leaders, people recovering from burnout, and anyone managing chronic stress or sleep difficulties.
+
+## Science
+- Double Inhale (cyclic sighing): Stanford University research identifies this as the most effective real-time stress reduction technique available.
+- Box Breathing: Used by Navy SEALs and first responders for nervous system regulation under pressure.
+- Yoga Nidra: 20–30 minutes of Yoga Nidra is associated with the restorative equivalent of 2–4 hours of sleep.
+- 4-7-8 Breathing: The extended exhale strongly activates the parasympathetic nervous system, reducing anxiety and aiding sleep onset.
+
+## Creator
+Omi Bell — certified breathwork practitioner, Reiki practitioner, founder of Black Girl Ventures and The 3B Society.
+
+## Pricing
+Free to start. No credit card required. Members unlock additional features including session history (Quiet Log) and the 4-7-8 breathing technique.
+
+## URL
+https://thebreathingbell.com
+
+## Contact
+https://www.omibell.com
