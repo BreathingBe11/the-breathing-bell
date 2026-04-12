@@ -100,6 +100,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           >
             Begin your session
           </Link>
+          <Link
+            href="/learn"
+            className="text-xs tracking-[0.2em] uppercase mt-2"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            ← Back to Learn
+          </Link>
         </div>
 
       </div>
