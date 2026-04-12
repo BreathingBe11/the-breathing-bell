@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, Tenor_Sans } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import JsonLd from '@/components/JsonLd'
 
@@ -109,6 +110,20 @@ export default function RootLayout({
           ],
         }} />
         {children}
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-BX4QW1C37K"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BX4QW1C37K');
+          `}
+        </Script>
       </body>
     </html>
   )
