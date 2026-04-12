@@ -84,13 +84,11 @@ export default function LearnPage() {
                     <Link
                       key={article.slug}
                       href={`/learn/${article.slug}`}
-                      className="flex flex-col px-6 py-5 rounded-xl transition-all"
+                      className="learn-card flex flex-col px-6 py-5 rounded-xl"
                       style={{
                         backgroundColor: 'var(--surface-2)',
                         border: '1px solid var(--border)',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
                     >
                       <span
                         className="text-lg font-medium mb-2 leading-snug"
