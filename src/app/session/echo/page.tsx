@@ -3,8 +3,15 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { useSessionStore } from '@/store/sessionStore'
 import { Session } from '@/types'
+
+const DOMAIN_ARTICLE: Record<string, { slug: string; label: string }> = {
+  body: { slug: 'how-breathwork-resets-your-nervous-system', label: 'How breathwork resets your nervous system' },
+  business: { slug: 'breathwork-for-founders-and-executives', label: 'Breathwork for founders and executives' },
+  belonging: { slug: 'breathwork-for-parents', label: 'Breathwork for parents' },
+}
 
 export default function EchoPage() {
   const router = useRouter()
@@ -172,6 +179,18 @@ export default function EchoPage() {
             >
               Return home
             </button>
+            {intake.domain && DOMAIN_ARTICLE[intake.domain] && (
+              <Link
+                href={`/learn/${DOMAIN_ARTICLE[intake.domain].slug}`}
+                className="w-full py-3 text-xs text-center tracking-[0.1em]"
+                style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+              >
+                Want to go deeper?{' '}
+                <span style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                  {DOMAIN_ARTICLE[intake.domain].label} →
+                </span>
+              </Link>
+            )}
           </motion.div>
         )}
       </div>

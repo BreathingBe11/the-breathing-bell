@@ -139,6 +139,22 @@ export default function LandingPage() {
             Body · Business · Belonging
           </motion.p>
 
+          {/* Learn link */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 2.1 }}
+            className="text-xs -mt-4"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            <Link
+              href="/learn"
+              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+            >
+              Learn about breathwork →
+            </Link>
+          </motion.p>
+
           {/* Copyright */}
           <motion.p
             initial={{ opacity: 0 }}
