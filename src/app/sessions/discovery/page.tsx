@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 // Replace with your actual Calendly discovery call URL
-const DISCOVERY_CALENDLY_URL = 'https://calendly.com/omibell/discovery'
+const DISCOVERY_CALENDLY_URL = 'https://calendly.com/omitheintuitive/discoverycall'
 
 export default function SessionsDiscoveryPage() {
   const router = useRouter()
