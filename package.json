@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
+    "@stripe/stripe-js": "^9.2.0",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.3",
     "framer-motion": "^12.38.0",
@@ -24,6 +25,7 @@
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
     "resend": "^6.10.0",
+    "stripe": "^22.0.2",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
