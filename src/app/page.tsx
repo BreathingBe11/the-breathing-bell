@@ -139,7 +139,7 @@ export default function LandingPage() {
             Body · Business · Belonging
           </motion.p>
 
-          {/* Learn link */}
+          {/* Learn + Sessions links */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -152,6 +152,13 @@ export default function LandingPage() {
               style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
             >
               Learn about breathwork →
+            </Link>
+            {' '}·{' '}
+            <Link
+              href="/sessions"
+              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+            >
+              Work with Omi →
             </Link>
           </motion.p>
 
