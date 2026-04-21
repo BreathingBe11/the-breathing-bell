@@ -41,7 +41,7 @@ export default function AdminDashboardClient({
   members: Member[]
 }) {
   const router = useRouter()
-  const [tab, setTab] = useState<'leads' | 'members' | 'email' | 'templates'>('leads')
+  const [tab, setTab] = useState<'leads' | 'members' | 'bookings' | 'email' | 'templates'>('leads')
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [deleting, setDeleting] = useState<string | null>(null)
 
@@ -51,6 +51,61 @@ export default function AdminDashboardClient({
   const [blastAudience, setBlastAudience] = useState<'leads' | 'members' | 'both'>('leads')
   const [blastSending, setBlastSending] = useState(false)
   const [blastResult, setBlastResult] = useState<string | null>(null)
+
+  // Bookings state
+  const [bookings, setBookings] = useState<{
+    id: string
+    clientName: string
+    email: string
+    session_type: string
+    scheduled_at: string | null
+    canceled_at: string | null
+    omi_notes: string | null
+    user_id: string | null
+  }[]>([])
+  const [bookingsLoaded, setBookingsLoaded] = useState(false)
+  const [editingNotes, setEditingNotes] = useState<string | null>(null)
+  const [notesValue, setNotesValue] = useState('')
+  const [notesSaving, setNotesSaving] = useState(false)
+  const [approvingUser, setApprovingUser] = useState<string | null>(null)
+
+  async function loadBookings() {
+    const res = await fetch('/api/admin/bookings')
+    if (res.ok) {
+      setBookings(await res.json())
+      setBookingsLoaded(true)
+    }
+  }
+
+  async function saveNotes(id: string) {
+    setNotesSaving(true)
+    await fetch('/api/admin/bookings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, omi_notes: notesValue }),
+    })
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, omi_notes: notesValue } : b))
+    setEditingNotes(null)
+    setNotesSaving(false)
+  }
+
+  async function approveClient(userId: string) {
+    setApprovingUser(userId)
+    await fetch('/api/admin/bookings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approved_user_id: userId }),
+    })
+    setApprovingUser(null)
+  }
+
+  function sessionTypeLabel(type: string) {
+    if (type === 'discovery') return 'Discovery Call'
+    if (type === '60-min') return '60-Min Session'
+    if (type === '30-min') return '30-Min Session'
+    if (type === 'group') return 'Group Session'
+    return type
+  }
 
   // Templates state
   const [templates, setTemplates] = useState<{ id: string; name: string; subject: string; body: string }[]>([])
@@ -153,12 +208,17 @@ export default function AdminDashboardClient({
           {([
             { key: 'leads', label: `Leads (${leads.length})` },
             { key: 'members', label: `Members (${members.length})` },
+            { key: 'bookings', label: 'Bookings' },
             { key: 'email', label: 'Send Email' },
             { key: 'templates', label: 'Email Copy' },
           ] as { key: typeof tab; label: string }[]).map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => { setTab(key); if (key === 'templates' && templates.length === 0) loadTemplates() }}
+              onClick={() => {
+              setTab(key)
+              if (key === 'templates' && templates.length === 0) loadTemplates()
+              if (key === 'bookings' && !bookingsLoaded) loadBookings()
+            }}
               className="px-5 py-2.5 text-xs tracking-[0.15em] uppercase"
               style={{
                 fontFamily: 'monospace',
@@ -260,6 +320,120 @@ export default function AdminDashboardClient({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Bookings tab */}
+        {tab === 'bookings' && (
+          <div className="flex flex-col gap-4">
+            {!bookingsLoaded && (
+              <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Loading bookings...</p>
+            )}
+            {bookingsLoaded && bookings.length === 0 && (
+              <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>No bookings yet.</p>
+            )}
+            {bookings.map((b) => (
+              <div
+                key={b.id}
+                className="rounded-xl p-5 flex flex-col gap-3"
+                style={{
+                  backgroundColor: '#1a2030',
+                  border: `1px solid ${b.canceled_at ? '#3a2020' : '#2a3040'}`,
+                  opacity: b.canceled_at ? 0.6 : 1,
+                }}
+              >
+                {/* Top row */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-semibold" style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>
+                      {b.clientName}
+                    </p>
+                    <p className="text-xs" style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>{b.email}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className="text-xs px-2 py-0.5 rounded"
+                      style={{
+                        backgroundColor: b.canceled_at ? '#3a2020' : 'rgba(42,181,197,0.15)',
+                        color: b.canceled_at ? '#f87171' : '#2ab5c5',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      {b.canceled_at ? 'Cancelled' : sessionTypeLabel(b.session_type)}
+                    </span>
+                    {b.scheduled_at && (
+                      <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>
+                        {formatDate(b.scheduled_at)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Approve button */}
+                {b.user_id && !b.canceled_at && (
+                  <button
+                    onClick={() => approveClient(b.user_id!)}
+                    disabled={approvingUser === b.user_id}
+                    className="text-xs tracking-[0.1em] uppercase self-start px-3 py-1.5 rounded"
+                    style={{
+                      backgroundColor: 'rgba(42,181,197,0.1)',
+                      color: '#2ab5c5',
+                      border: '1px solid rgba(42,181,197,0.3)',
+                      fontFamily: 'monospace',
+                      opacity: approvingUser === b.user_id ? 0.5 : 1,
+                    }}
+                  >
+                    {approvingUser === b.user_id ? 'Approving...' : '✓ Approve for sessions'}
+                  </button>
+                )}
+
+                {/* Notes */}
+                {editingNotes === b.id ? (
+                  <div className="flex flex-col gap-2">
+                    <textarea
+                      value={notesValue}
+                      onChange={(e) => setNotesValue(e.target.value)}
+                      rows={4}
+                      placeholder="Add session notes for this client..."
+                      className="w-full px-3 py-2 rounded text-xs outline-none resize-y"
+                      style={{ backgroundColor: '#0d1117', border: '1px solid #2a3040', color: '#e8e2d9', fontFamily: 'monospace' }}
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => saveNotes(b.id)}
+                        disabled={notesSaving}
+                        className="px-4 py-1.5 rounded text-xs tracking-[0.1em] uppercase"
+                        style={{ backgroundColor: '#2ab5c5', color: '#0d1117', fontFamily: 'monospace' }}
+                      >
+                        {notesSaving ? 'Saving...' : 'Save notes'}
+                      </button>
+                      <button
+                        onClick={() => setEditingNotes(null)}
+                        className="px-4 py-1.5 rounded text-xs tracking-[0.1em] uppercase"
+                        style={{ color: '#7a8a99', border: '1px solid #2a3040', fontFamily: 'monospace' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    {b.omi_notes && (
+                      <p className="text-xs italic" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>
+                        &ldquo;{b.omi_notes}&rdquo;
+                      </p>
+                    )}
+                    <button
+                      onClick={() => { setEditingNotes(b.id); setNotesValue(b.omi_notes ?? '') }}
+                      className="text-xs tracking-[0.1em] uppercase self-start"
+                      style={{ color: '#7a8a99', fontFamily: 'monospace', textDecoration: 'underline' }}
+                    >
+                      {b.omi_notes ? 'Edit notes' : '+ Add notes'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
