@@ -20,9 +20,39 @@ export default function SessionsSignupPage() {
     if (!sessionStorage.getItem('tbb_terms_accepted')) {
       router.replace('/sessions/disclaimer')
     }
-    // Check if already signed in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/sessions/discovery')
+    // Already signed in — save intake data + T&Cs to their existing profile
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return
+
+      const goals: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_goals') ?? '[]')
+      const healthFlags: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_health') ?? '[]')
+
+      // Save terms acceptance
+      await supabase
+        .from('profiles')
+        .update({ terms_accepted_at: new Date().toISOString() })
+        .eq('id', session.user.id)
+
+      // Save intake data
+      fetch('/api/sessions/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: session.user.id, email: session.user.email, goals, healthFlags }),
+      }).catch(() => {})
+
+      // Clear sessionStorage
+      sessionStorage.removeItem('tbb_terms_accepted')
+      sessionStorage.removeItem('tbb_intake_goals')
+      sessionStorage.removeItem('tbb_intake_health')
+
+      // If already approved, go straight to booking — otherwise book discovery call
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('approved_for_sessions')
+        .eq('id', session.user.id)
+        .single()
+
+      router.replace(profile?.approved_for_sessions ? '/sessions/book' : '/sessions/discovery')
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

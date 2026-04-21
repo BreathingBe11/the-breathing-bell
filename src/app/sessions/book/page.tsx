@@ -49,9 +49,15 @@ export default function SessionsBookPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('approved_for_sessions')
+        .select('approved_for_sessions, terms_accepted_at')
         .eq('id', user.id)
         .single()
+
+      // First-time session client: gate them through intake + T&Cs
+      if (!profile?.terms_accepted_at) {
+        router.replace('/sessions/intake')
+        return
+      }
 
       setApproved(profile?.approved_for_sessions ?? false)
       setLoading(false)
