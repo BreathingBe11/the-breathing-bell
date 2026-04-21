@@ -5,17 +5,39 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { PRODUCTS, ProductKey } from '@/lib/stripe'
 
-type Credits = { credits_total: number; credits_used: number }
+const SESSIONS = [
+  {
+    title: 'Discovery Call',
+    description: 'A free 20-minute conversation with Omi to talk about your goals and see if sessions are the right fit.',
+    duration: '20 min',
+    price: 'Free',
+    url: 'https://calendly.com/omitheintuitive/discoverycall',
+    requiresApproval: false,
+  },
+  {
+    title: '60-Minute Session',
+    description: 'A full-length session with your choice of modality — breathwork, sound, yoga nidra, or a mix.',
+    duration: '60 min',
+    price: null, // Set in Calendly
+    url: 'https://calendly.com/omitheintuitive/60min',
+    requiresApproval: true,
+  },
+  {
+    title: '30-Minute Session',
+    description: 'A focused half-hour session. Choose your modality when you book.',
+    duration: '30 min',
+    price: null,
+    url: 'https://calendly.com/omitheintuitive/30mins',
+    requiresApproval: true,
+  },
+]
 
 export default function SessionsBookPage() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [approved, setApproved] = useState(false)
-  const [creditsRemaining, setCreditsRemaining] = useState(0)
-  const [purchasing, setPurchasing] = useState<ProductKey | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -32,20 +54,6 @@ export default function SessionsBookPage() {
         .single()
 
       setApproved(profile?.approved_for_sessions ?? false)
-
-      const { data: credits } = await supabase
-        .from('session_credits')
-        .select('credits_total, credits_used')
-        .eq('user_id', user.id)
-
-      if (credits) {
-        const remaining = (credits as Credits[]).reduce(
-          (sum, c) => sum + c.credits_total - c.credits_used,
-          0
-        )
-        setCreditsRemaining(remaining)
-      }
-
       setLoading(false)
     }
 
@@ -53,26 +61,9 @@ export default function SessionsBookPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function handlePurchase(productKey: ProductKey) {
-    setPurchasing(productKey)
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productKey }),
-      })
-      const { url, error } = await res.json()
-      if (error || !url) {
-        setPurchasing(null)
-        return
-      }
-      window.location.href = url
-    } catch {
-      setPurchasing(null)
-    }
-  }
-
   if (loading) return null
+
+  const visible = SESSIONS.filter(s => !s.requiresApproval || approved)
 
   return (
     <main
@@ -97,169 +88,125 @@ export default function SessionsBookPage() {
           ← Omi Sessions
         </Link>
 
-        {!approved ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-center text-center gap-6 py-20"
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col gap-3 mb-10"
+        >
+          <h1
+            className="text-3xl font-medium leading-snug"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
           >
-            <p
-              className="text-xs tracking-[0.2em] uppercase"
-              style={{ color: 'var(--accent)', fontFamily: 'var(--font-body)' }}
-            >
-              Almost there
-            </p>
-            <h1
-              className="text-3xl font-medium leading-snug"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
-            >
-              Your discovery call is pending
-            </h1>
-            <p
-              className="text-sm leading-relaxed max-w-sm"
-              style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
-            >
-              Once you&apos;ve completed your discovery call, Omi will confirm your access
-              and you&apos;ll be able to book sessions here.
-            </p>
-            <Link
-              href="/sessions/discovery"
-              className="px-8 py-3 rounded-full text-sm tracking-[0.15em] uppercase"
+            Book a session
+          </h1>
+          <p
+            className="text-sm"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            {approved
+              ? 'Choose a session type below. You\'ll select your modality when you book.'
+              : 'Start with a free discovery call. Paid sessions unlock after your call with Omi.'}
+          </p>
+        </motion.div>
+
+        <div className="flex flex-col gap-4">
+          {visible.map((session, i) => (
+            <motion.a
+              key={session.title}
+              href={session.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="learn-card flex flex-col px-6 py-5 rounded-xl"
               style={{
-                backgroundColor: 'var(--accent)',
-                color: 'var(--background)',
-                fontFamily: 'var(--font-body)',
+                backgroundColor: 'var(--surface-2)',
+                border: '1px solid var(--border)',
+                textDecoration: 'none',
               }}
             >
-              Book my discovery call
-            </Link>
-          </motion.div>
-        ) : creditsRemaining > 0 ? (
-          // Has credits — show Calendly directly
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col gap-8"
-          >
-            <div className="flex flex-col gap-2">
-              <p
-                className="text-xs tracking-[0.2em] uppercase"
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <span
+                    className="text-lg font-medium leading-snug"
+                    style={{ color: 'var(--foreground)', fontFamily: 'var(--font-display)' }}
+                  >
+                    {session.title}
+                  </span>
+                  <span
+                    className="text-sm leading-relaxed"
+                    style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                  >
+                    {session.description}
+                  </span>
+                </div>
+                <div
+                  className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5"
+                  style={{ minWidth: '60px' }}
+                >
+                  <span
+                    className="text-xs tracking-[0.15em] uppercase"
+                    style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                  >
+                    {session.duration}
+                  </span>
+                  {session.price && (
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: 'var(--accent)', fontFamily: 'var(--font-body)' }}
+                    >
+                      {session.price}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <span
+                className="text-xs tracking-[0.15em] uppercase mt-4"
                 style={{ color: 'var(--accent)', fontFamily: 'var(--font-body)' }}
               >
-                {creditsRemaining} session{creditsRemaining !== 1 ? 's' : ''} remaining
-              </p>
-              <h1
-                className="text-3xl font-medium leading-snug"
-                style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
-              >
-                Pick your time
-              </h1>
-            </div>
+                Book on Calendly →
+              </span>
+            </motion.a>
+          ))}
 
-            <div
-              className="w-full rounded-2xl overflow-hidden"
-              style={{ border: '1px solid var(--border)' }}
+          {!approved && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="px-6 py-4 rounded-xl"
+              style={{
+                backgroundColor: 'var(--surface-2)',
+                border: '1px solid var(--border)',
+                opacity: 0.5,
+              }}
             >
-              <iframe
-                src="https://calendly.com/omitheintuitive/discoverycall?embed_type=Inline&hide_gdpr_banner=1&background_color=141820&text_color=e8e4dc&primary_color=2AB5C5"
-                width="100%"
-                height="700"
-                frameBorder="0"
-                title="Book your session with Omi Bell"
-              />
-            </div>
-          </motion.div>
-        ) : (
-          // No credits — show pricing
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col gap-10"
-          >
-            <div className="flex flex-col gap-2">
-              <p
-                className="text-xs tracking-[0.2em] uppercase"
-                style={{ color: 'var(--accent)', fontFamily: 'var(--font-body)' }}
-              >
-                Ready to begin
-              </p>
-              <h1
-                className="text-3xl font-medium leading-snug"
-                style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}
-              >
-                Choose your sessions
-              </h1>
               <p
                 className="text-sm"
                 style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
               >
-                All sessions are 60 minutes with Omi Bell.
+                60 &amp; 30-minute sessions unlock after your discovery call.
               </p>
-            </div>
+            </motion.div>
+          )}
+        </div>
 
-            <div className="flex flex-col gap-4">
-              {(Object.entries(PRODUCTS) as [ProductKey, typeof PRODUCTS[ProductKey]][]).map(
-                ([key, product]) => (
-                  <div
-                    key={key}
-                    className="flex items-center justify-between px-6 py-5 rounded-xl"
-                    style={{
-                      backgroundColor: 'var(--surface-2)',
-                      border: '1px solid var(--border)',
-                    }}
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span
-                        className="text-base font-medium"
-                        style={{ color: 'var(--foreground)', fontFamily: 'var(--font-display)' }}
-                      >
-                        {product.label}
-                      </span>
-                      <span
-                        className="text-sm"
-                        style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
-                      >
-                        {product.description}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 ml-4 flex-shrink-0">
-                      <span
-                        className="text-lg font-medium"
-                        style={{ color: 'var(--foreground)', fontFamily: 'var(--font-display)' }}
-                      >
-                        ${(product.price / 100).toLocaleString()}
-                        {product.mode === 'subscription' && (
-                          <span
-                            className="text-sm font-normal"
-                            style={{ color: 'var(--muted)' }}
-                          >
-                            /mo
-                          </span>
-                        )}
-                      </span>
-                      <button
-                        onClick={() => handlePurchase(key)}
-                        disabled={purchasing !== null}
-                        className="px-5 py-2 rounded-full text-xs tracking-[0.15em] uppercase transition-all"
-                        style={{
-                          backgroundColor: 'var(--accent)',
-                          color: 'var(--background)',
-                          fontFamily: 'var(--font-body)',
-                          opacity: purchasing !== null ? 0.6 : 1,
-                        }}
-                      >
-                        {purchasing === key ? 'Loading...' : 'Select'}
-                      </button>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </motion.div>
-        )}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-10 flex justify-center"
+        >
+          <Link
+            href="/dashboard"
+            className="text-xs tracking-[0.15em] uppercase"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            ← My dashboard
+          </Link>
+        </motion.div>
 
       </div>
     </main>
