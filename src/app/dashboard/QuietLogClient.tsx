@@ -386,17 +386,25 @@ export default function QuietLogClient({
               className="flex flex-col gap-8"
             >
               {/* Book CTA */}
-              <Link
-                href="/sessions/book"
-                className="block w-full py-4 text-center rounded-full text-sm tracking-[0.15em] uppercase transition-all"
-                style={{
-                  backgroundColor: 'var(--accent)',
-                  color: 'var(--background)',
-                  fontFamily: 'var(--font-body)',
-                }}
-              >
-                Book a session with Omi
-              </Link>
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/sessions/book"
+                  className="block w-full py-4 text-center rounded-full text-sm tracking-[0.15em] uppercase transition-all"
+                  style={{
+                    backgroundColor: 'var(--accent)',
+                    color: 'var(--background)',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                >
+                  Book a live session with Omi
+                </Link>
+                <p
+                  className="text-xs text-center leading-relaxed"
+                  style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                >
+                  Available for breathwork, sound healing, and yoga nidra — 30 or 60 minutes.
+                </p>
+              </div>
 
               {/* Upcoming */}
               {upcoming.length > 0 && (
