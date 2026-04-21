@@ -15,6 +15,7 @@ export default function BreatheSessionPage() {
   const [timeRemaining, setTimeRemaining] = useState(0)
   const [started, setStarted] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const bellRef = useRef<HTMLAudioElement | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const startTimeRef = useRef<number | null>(null)
 
@@ -42,7 +43,7 @@ export default function BreatheSessionPage() {
       if (remaining <= 0) {
         clearInterval(intervalRef.current!)
         setTimeRemaining(0)
-        router.push('/session/echo')
+        playBellAndNavigate()
       } else {
         setTimeRemaining(remaining)
       }
@@ -54,6 +55,17 @@ export default function BreatheSessionPage() {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
   }, [])
+
+  function playBellAndNavigate() {
+    if (audioRef.current) audioRef.current.pause()
+    if (bellRef.current) {
+      bellRef.current.currentTime = 0
+      bellRef.current.play().catch(() => {})
+    }
+    setTimeout(() => {
+      router.push('/session/echo')
+    }, 10000)
+  }
 
   const minutes = Math.floor(timeRemaining / 60)
   const seconds = timeRemaining % 60
@@ -196,6 +208,7 @@ export default function BreatheSessionPage() {
             />
           </audio>
         )}
+        <audio ref={bellRef} preload="auto" src="/audio/bell/bell.mp3" />
       </div>
     </main>
   )

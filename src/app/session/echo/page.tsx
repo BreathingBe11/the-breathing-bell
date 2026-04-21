@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -19,6 +19,20 @@ export default function EchoPage() {
   const [echo, setEcho] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const bellRef = useRef<HTMLAudioElement | null>(null)
+
+  // Start bell looping on mount, clean up on unmount
+  useEffect(() => {
+    const bell = new Audio('/audio/bell/bell.mp3')
+    bell.loop = true
+    bell.volume = 1
+    bell.play().catch(() => {})
+    bellRef.current = bell
+    return () => {
+      bell.pause()
+      bell.src = ''
+    }
+  }, [])
 
   useEffect(() => {
     if (!_hasHydrated) return
@@ -44,6 +58,23 @@ export default function EchoPage() {
         if (!res.ok) throw new Error('Failed to fetch echo')
         const data = await res.json()
         setEcho(data.echo)
+
+        // Fade bell out over 2 seconds, starting 2 seconds after echo appears
+        setTimeout(() => {
+          const bell = bellRef.current
+          if (!bell) return
+          const steps = 40
+          const interval = 2000 / steps
+          let step = 0
+          const fade = setInterval(() => {
+            step++
+            bell.volume = Math.max(0, 1 - step / steps)
+            if (step >= steps) {
+              clearInterval(fade)
+              bell.pause()
+            }
+          }, interval)
+        }, 2000)
 
         // Build session object for saving
         const session: Session = {
