@@ -21,6 +21,7 @@ interface Member {
   sessionCount: number
   lastLogin: string | null
   memberSince: string
+  approvedForSessions: boolean
 }
 
 function formatDate(iso: string | null) {
@@ -35,7 +36,7 @@ const headerCell = `${cell} font-semibold uppercase tracking-[0.1em]`
 
 export default function AdminDashboardClient({
   leads: initialLeads,
-  members,
+  members: initialMembers,
 }: {
   leads: Lead[]
   members: Member[]
@@ -44,6 +45,9 @@ export default function AdminDashboardClient({
   const [tab, setTab] = useState<'leads' | 'members' | 'bookings' | 'email' | 'templates'>('leads')
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [members, setMembers] = useState<Member[]>(initialMembers)
+  const [deletingMember, setDeletingMember] = useState<string | null>(null)
+  const [approvingMember, setApprovingMember] = useState<string | null>(null)
 
   // Blast state
   const [blastSubject, setBlastSubject] = useState('')
@@ -162,6 +166,30 @@ export default function AdminDashboardClient({
       setLeads((prev) => prev.filter((l) => l.id !== id))
     }
     setDeleting(null)
+  }
+
+  async function handleDeleteMember(id: string) {
+    setDeletingMember(id)
+    const res = await fetch('/api/admin/members', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (res.ok) {
+      setMembers((prev) => prev.filter((m) => m.id !== id))
+    }
+    setDeletingMember(null)
+  }
+
+  async function approveMemberForSessions(id: string) {
+    setApprovingMember(id)
+    await fetch('/api/admin/bookings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approved_user_id: id }),
+    })
+    setMembers((prev) => prev.map((m) => m.id === id ? { ...m, approvedForSessions: true } : m))
+    setApprovingMember(null)
   }
 
   async function handleSignOut() {
@@ -289,7 +317,7 @@ export default function AdminDashboardClient({
             <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
               <thead style={{ backgroundColor: '#1a2030' }}>
                 <tr>
-                  {['Name', 'Email', 'Age Range', 'Sessions', 'Logins', 'Last Login', 'Member Since'].map((h) => (
+                  {['Name', 'Email', 'Age Range', 'Sessions', 'Logins', 'Last Login', 'Member Since', 'Live Sessions', ''].map((h) => (
                     <th key={h} className={headerCell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{h}</th>
                   ))}
                 </tr>
@@ -297,7 +325,7 @@ export default function AdminDashboardClient({
               <tbody>
                 {members.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>
+                    <td colSpan={9} className="px-4 py-8 text-center" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>
                       No members yet.
                     </td>
                   </tr>
@@ -316,6 +344,41 @@ export default function AdminDashboardClient({
                     <td className={cell} style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{m.loginCount}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{formatDate(m.lastLogin)}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{formatDate(m.memberSince)}</td>
+                    <td className={cell}>
+                      {m.approvedForSessions ? (
+                        <span style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>✓ Approved</span>
+                      ) : (
+                        <button
+                          onClick={() => approveMemberForSessions(m.id)}
+                          disabled={approvingMember === m.id}
+                          style={{
+                            color: approvingMember === m.id ? '#7a8a99' : '#2ab5c5',
+                            fontFamily: 'monospace',
+                            fontSize: '0.7rem',
+                            border: '1px solid rgba(42,181,197,0.4)',
+                            borderRadius: '4px',
+                            padding: '2px 8px',
+                            opacity: approvingMember === m.id ? 0.5 : 1,
+                          }}
+                        >
+                          {approvingMember === m.id ? 'Approving...' : 'Approve'}
+                        </button>
+                      )}
+                    </td>
+                    <td className={cell}>
+                      <button
+                        onClick={() => handleDeleteMember(m.id)}
+                        disabled={deletingMember === m.id}
+                        style={{
+                          color: deletingMember === m.id ? '#7a8a99' : '#f87171',
+                          fontFamily: 'monospace',
+                          fontSize: '0.7rem',
+                          opacity: deletingMember === m.id ? 0.5 : 1,
+                        }}
+                      >
+                        {deletingMember === m.id ? 'removing…' : 'Delete'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

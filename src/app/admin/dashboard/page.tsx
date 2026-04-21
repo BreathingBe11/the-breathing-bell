@@ -21,7 +21,7 @@ async function getMembers() {
   // Get all profiles
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('id, name, age_range, login_count, subscription_tier, created_at')
+    .select('id, name, age_range, login_count, subscription_tier, created_at, approved_for_sessions')
 
   // Get session counts per user
   const { data: sessions } = await supabase
@@ -42,6 +42,7 @@ async function getMembers() {
       sessionCount,
       lastLogin: user.last_sign_in_at ?? null,
       memberSince: user.created_at,
+      approvedForSessions: profile?.approved_for_sessions ?? false,
     }
   }).sort((a, b) => new Date(b.memberSince).getTime() - new Date(a.memberSince).getTime())
 
@@ -51,5 +52,8 @@ async function getMembers() {
 export default async function AdminDashboardPage() {
   const [leads, members] = await Promise.all([getLeads(), getMembers()])
 
-  return <AdminDashboardClient leads={leads} members={members} />
+  const memberEmails = new Set(members.map(m => m.email.toLowerCase()))
+  const filteredLeads = leads.filter(l => !memberEmails.has(l.email.toLowerCase()))
+
+  return <AdminDashboardClient leads={filteredLeads} members={members} />
 }
