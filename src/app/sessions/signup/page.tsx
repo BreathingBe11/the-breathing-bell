@@ -45,14 +45,7 @@ export default function SessionsSignupPage() {
       sessionStorage.removeItem('tbb_intake_goals')
       sessionStorage.removeItem('tbb_intake_health')
 
-      // If already approved, go straight to booking — otherwise book discovery call
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('approved_for_sessions')
-        .eq('id', session.user.id)
-        .single()
-
-      router.replace(profile?.approved_for_sessions ? '/sessions/book' : '/sessions/discovery')
+      router.replace('/sessions/book')
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -119,7 +112,7 @@ export default function SessionsSignupPage() {
     sessionStorage.removeItem('tbb_intake_goals')
     sessionStorage.removeItem('tbb_intake_health')
 
-    router.push('/sessions/discovery')
+    router.push('/sessions/book')
   }
 
   return (
