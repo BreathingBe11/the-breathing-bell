@@ -27,18 +27,12 @@ export default function SessionsSignupPage() {
       const goals: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_goals') ?? '[]')
       const healthFlags: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_health') ?? '[]')
 
-      // Save terms acceptance
-      await supabase
-        .from('profiles')
-        .update({ terms_accepted_at: new Date().toISOString() })
-        .eq('id', session.user.id)
-
-      // Save intake data
-      fetch('/api/sessions/intake', {
+      // Save intake data + terms_accepted_at via admin API (bypasses RLS, guaranteed to persist)
+      await fetch('/api/sessions/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: session.user.id, email: session.user.email, goals, healthFlags }),
-      }).catch(() => {})
+      })
 
       // Clear sessionStorage
       sessionStorage.removeItem('tbb_terms_accepted')
