@@ -104,9 +104,7 @@ export default function SessionsDisclaimerPage() {
               These terms are governed by the laws of the applicable jurisdiction.
               Any disputes shall be resolved through good-faith negotiation.
             </p>
-            <p className="mt-4 text-xs italic">
-              [Placeholder — these terms should be reviewed by a qualified attorney before going live.]
-            </p>
+
           </section>
         </div>
 
