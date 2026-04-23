@@ -12,9 +12,11 @@ export default function SessionsDisclaimerPage() {
   const [agreedHealth, setAgreedHealth] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   async function handleContinue() {
     setLoading(true)
+    setSaveError('')
     sessionStorage.setItem('tbb_terms_accepted', '1')
 
     // If already signed in, save intake + terms now and go straight to booking
@@ -23,11 +25,17 @@ export default function SessionsDisclaimerPage() {
       const goals: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_goals') ?? '[]')
       const healthFlags: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_health') ?? '[]')
 
-      await fetch('/api/sessions/intake', {
+      const res = await fetch('/api/sessions/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: session.user.id, email: session.user.email, goals, healthFlags }),
       })
+
+      if (!res.ok) {
+        setSaveError('Something went wrong saving your agreement. Please try again.')
+        setLoading(false)
+        return
+      }
 
       sessionStorage.removeItem('tbb_terms_accepted')
       sessionStorage.removeItem('tbb_intake_goals')
@@ -184,6 +192,12 @@ export default function SessionsDisclaimerPage() {
             </span>
           </motion.button>
         </div>
+
+        {saveError && (
+          <p className="text-sm text-red-400 mb-4" style={{ fontFamily: 'var(--font-body)' }}>
+            {saveError}
+          </p>
+        )}
 
         <button
           onClick={handleContinue}
