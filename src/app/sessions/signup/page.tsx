@@ -14,6 +14,7 @@ export default function SessionsSignupPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [alreadyExists, setAlreadyExists] = useState(false)
 
   useEffect(() => {
     // Redirect if disclaimer wasn't accepted
@@ -53,7 +54,7 @@ export default function SessionsSignupPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/sessions/book`,
       },
     })
 
@@ -65,6 +66,14 @@ export default function SessionsSignupPage() {
 
     if (!data.user) {
       setError('Something went wrong. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    // Supabase silently returns a fake user when email already exists
+    if ((data.user.identities ?? []).length === 0) {
+      setError('An account with this email already exists.')
+      setAlreadyExists(true)
       setLoading(false)
       return
     }
@@ -212,9 +221,21 @@ export default function SessionsSignupPage() {
             />
 
             {error && (
-              <p className="text-sm text-red-400" style={{ fontFamily: 'var(--font-body)' }}>
-                {error}
-              </p>
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-red-400" style={{ fontFamily: 'var(--font-body)' }}>
+                  {error}
+                </p>
+                {alreadyExists && (
+                  <button
+                    type="button"
+                    onClick={() => router.push('/login?next=/sessions/book')}
+                    className="text-sm text-left underline underline-offset-2"
+                    style={{ color: 'var(--accent)', fontFamily: 'var(--font-body)' }}
+                  >
+                    Sign in instead →
+                  </button>
+                )}
+              </div>
             )}
 
             <button

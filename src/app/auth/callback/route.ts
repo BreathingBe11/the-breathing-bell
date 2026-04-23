@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const type = searchParams.get('type')
+  const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
     const supabase = await createClient()
@@ -15,8 +16,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/reset-password`)
     }
 
-    // Email verification — send to dashboard
-    return NextResponse.redirect(`${origin}/dashboard`)
+    // Email verification — send to `next` destination (default: dashboard)
+    return NextResponse.redirect(`${origin}${next}`)
   }
 
   // Something went wrong

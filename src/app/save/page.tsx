@@ -119,6 +119,13 @@ export default function SavePage() {
       return
     }
 
+    // Supabase silently returns a fake user when email already exists
+    if ((data.user.identities ?? []).length === 0) {
+      setError('An account with this email already exists. Sign in below.')
+      setMode('returning')
+      return
+    }
+
     // If no session, email confirmation is required — show verify screen
     if (!data.session) {
       setMode('verify-email')
