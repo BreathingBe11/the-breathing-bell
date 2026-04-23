@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Lead {
@@ -22,6 +22,19 @@ interface Member {
   lastLogin: string | null
   memberSince: string
   approvedForSessions: boolean
+}
+
+interface MemberDetail {
+  user: { email: string; createdAt: string | null; lastSignIn: string | null }
+  profile: {
+    name: string; last_name: string | null; age_range: string
+    subscription_tier: string; login_count: number
+    approved_for_sessions: boolean; terms_accepted_at: string | null
+    referral_source: string | null
+  } | null
+  intake: { goals: string[]; health_flags: string[]; created_at: string } | null
+  appSessions: { id: string; technique: string; domain: string; duration_minutes: number; completed_at: string }[]
+  bookings: { id: string; session_type: string; scheduled_at: string | null; canceled_at: string | null; omi_notes: string | null }[]
 }
 
 function formatDate(iso: string | null) {
@@ -48,6 +61,9 @@ export default function AdminDashboardClient({
   const [members, setMembers] = useState<Member[]>(initialMembers)
   const [deletingMember, setDeletingMember] = useState<string | null>(null)
   const [approvingMember, setApprovingMember] = useState<string | null>(null)
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
+  const [memberDetail, setMemberDetail] = useState<MemberDetail | null>(null)
+  const [memberDetailLoading, setMemberDetailLoading] = useState(false)
 
   // Blast state
   const [blastSubject, setBlastSubject] = useState('')
@@ -192,12 +208,29 @@ export default function AdminDashboardClient({
     setApprovingMember(null)
   }
 
+  const loadMemberDetail = useCallback(async (id: string) => {
+    setSelectedMemberId(id)
+    setMemberDetail(null)
+    setMemberDetailLoading(true)
+    const res = await fetch(`/api/admin/members/${id}`)
+    if (res.ok) setMemberDetail(await res.json())
+    setMemberDetailLoading(false)
+  }, [])
+
+  // Close panel on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setSelectedMemberId(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   async function handleSignOut() {
     await fetch('/api/admin/auth', { method: 'DELETE' })
     router.push('/admin/login')
   }
 
   return (
+    <>
     <main className="min-h-screen px-6 py-10" style={{ backgroundColor: '#0d1117', color: '#e8e2d9' }}>
       <div className="max-w-6xl mx-auto">
 
@@ -332,9 +365,11 @@ export default function AdminDashboardClient({
                 ) : members.map((m, i) => (
                   <tr
                     key={m.id}
+                    onClick={() => loadMemberDetail(m.id)}
                     style={{
                       borderTop: '1px solid #2a3040',
-                      backgroundColor: i % 2 === 0 ? 'transparent' : '#131920',
+                      backgroundColor: selectedMemberId === m.id ? '#1e2d3d' : i % 2 === 0 ? 'transparent' : '#131920',
+                      cursor: 'pointer',
                     }}
                   >
                     <td className={cell} style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{m.name}</td>
@@ -344,7 +379,7 @@ export default function AdminDashboardClient({
                     <td className={cell} style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{m.loginCount}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{formatDate(m.lastLogin)}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{formatDate(m.memberSince)}</td>
-                    <td className={cell}>
+                    <td className={cell} onClick={(e) => e.stopPropagation()}>
                       {m.approvedForSessions ? (
                         <span style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>✓ Approved</span>
                       ) : (
@@ -365,7 +400,7 @@ export default function AdminDashboardClient({
                         </button>
                       )}
                     </td>
-                    <td className={cell}>
+                    <td className={cell} onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => handleDeleteMember(m.id)}
                         disabled={deletingMember === m.id}
@@ -627,5 +662,155 @@ export default function AdminDashboardClient({
 
       </div>
     </main>
+
+    {/* Member detail panel */}
+    {selectedMemberId && (
+      <>
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 z-40"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setSelectedMemberId(null)}
+        />
+        {/* Panel */}
+        <div
+          className="fixed top-0 right-0 h-full z-50 overflow-y-auto"
+          style={{
+            width: 'min(480px, 100vw)',
+            backgroundColor: '#0d1117',
+            borderLeft: '1px solid #2a3040',
+            padding: '2rem 1.5rem',
+          }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs tracking-[0.2em] uppercase" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Client Profile</p>
+            <button onClick={() => setSelectedMemberId(null)} style={{ color: '#7a8a99', fontFamily: 'monospace', fontSize: '1.2rem' }}>×</button>
+          </div>
+
+          {memberDetailLoading && (
+            <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Loading...</p>
+          )}
+
+          {memberDetail && (() => {
+            const { user, profile, intake, appSessions, bookings: memberBookings } = memberDetail
+            const liveSessions = memberBookings.filter(b => !b.canceled_at)
+            return (
+              <div className="flex flex-col gap-6">
+
+                {/* Identity */}
+                <div className="flex flex-col gap-1">
+                  <p className="text-lg font-semibold" style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>
+                    {profile?.name ?? '—'}{profile?.last_name ? ` ${profile.last_name}` : ''}
+                  </p>
+                  <p className="text-sm" style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>{user.email}</p>
+                </div>
+
+                <div style={{ borderTop: '1px solid #2a3040' }} />
+
+                {/* Key facts */}
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: 'Member Since', value: formatDate(user.createdAt) },
+                    { label: 'Last Login', value: formatDate(user.lastSignIn) },
+                    { label: 'Login Count', value: profile?.login_count ?? 0 },
+                    { label: 'Age Range', value: profile?.age_range ?? '—' },
+                    { label: 'Referral Source', value: profile?.referral_source ?? '—' },
+                    { label: 'Terms Accepted', value: profile?.terms_accepted_at ? formatDate(profile.terms_accepted_at) : 'Not yet' },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="rounded-lg px-3 py-2" style={{ backgroundColor: '#1a2030', border: '1px solid #2a3040' }}>
+                      <p className="text-xs uppercase tracking-[0.1em] mb-0.5" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{label}</p>
+                      <p className="text-xs font-semibold" style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{String(value)}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Session counts */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg px-3 py-3 text-center" style={{ backgroundColor: '#1a2030', border: '1px solid #2a3040' }}>
+                    <p className="text-2xl font-bold" style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>{appSessions.length}</p>
+                    <p className="text-xs uppercase tracking-[0.1em] mt-1" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>App Sessions</p>
+                  </div>
+                  <div className="rounded-lg px-3 py-3 text-center" style={{ backgroundColor: '#1a2030', border: '1px solid #2a3040' }}>
+                    <p className="text-2xl font-bold" style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>{liveSessions.length}</p>
+                    <p className="text-xs uppercase tracking-[0.1em] mt-1" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Live Sessions</p>
+                  </div>
+                </div>
+
+                {/* Approval status */}
+                <div className="flex items-center justify-between rounded-lg px-3 py-3" style={{ backgroundColor: '#1a2030', border: '1px solid #2a3040' }}>
+                  <p className="text-xs uppercase tracking-[0.1em]" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Live Session Access</p>
+                  {profile?.approved_for_sessions ? (
+                    <span style={{ color: '#2ab5c5', fontFamily: 'monospace', fontSize: '0.75rem' }}>✓ Approved</span>
+                  ) : (
+                    <button
+                      onClick={() => { approveMemberForSessions(selectedMemberId!); setMemberDetail(d => d ? { ...d, profile: d.profile ? { ...d.profile, approved_for_sessions: true } : d.profile } : d) }}
+                      disabled={approvingMember === selectedMemberId}
+                      style={{ color: '#2ab5c5', fontFamily: 'monospace', fontSize: '0.7rem', border: '1px solid rgba(42,181,197,0.4)', borderRadius: '4px', padding: '2px 8px' }}
+                    >
+                      {approvingMember === selectedMemberId ? 'Approving...' : 'Approve'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Goals */}
+                {intake?.goals?.length ? (
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.1em] mb-2" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Goals</p>
+                    <div className="flex flex-wrap gap-2">
+                      {intake.goals.map(g => (
+                        <span key={g} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(42,181,197,0.1)', color: '#2ab5c5', border: '1px solid rgba(42,181,197,0.3)', fontFamily: 'monospace' }}>{g}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Health flags */}
+                {intake ? (
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.1em] mb-2" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Health Screening</p>
+                    {intake.health_flags?.length && !intake.health_flags.includes('None of the above') ? (
+                      <div className="flex flex-wrap gap-2">
+                        {intake.health_flags.map(f => (
+                          <span key={f} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)', fontFamily: 'monospace' }}>{f}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>No health flags reported</p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.1em] mb-1" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Health Screening</p>
+                    <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Not completed</p>
+                  </div>
+                )}
+
+                {/* Live session history */}
+                {memberBookings.length > 0 && (
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.1em] mb-2" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Live Session History</p>
+                    <div className="flex flex-col gap-2">
+                      {memberBookings.map(b => (
+                        <div key={b.id} className="flex items-center justify-between px-3 py-2 rounded" style={{ backgroundColor: '#1a2030', border: `1px solid ${b.canceled_at ? '#3a2020' : '#2a3040'}` }}>
+                          <div>
+                            <p className="text-xs" style={{ color: b.canceled_at ? '#f87171' : '#e8e2d9', fontFamily: 'monospace' }}>
+                              {sessionTypeLabel(b.session_type)}{b.canceled_at ? ' (cancelled)' : ''}
+                            </p>
+                            {b.omi_notes && <p className="text-xs italic mt-0.5" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>"{b.omi_notes}"</p>}
+                          </div>
+                          <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{formatDate(b.scheduled_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )
+          })()}
+        </div>
+      </>
+    )}
+    </>
   )
 }
