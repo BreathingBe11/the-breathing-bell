@@ -4,14 +4,40 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
 export default function SessionsDisclaimerPage() {
   const router = useRouter()
+  const supabase = createClient()
   const [agreedHealth, setAgreedHealth] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  function handleContinue() {
+  async function handleContinue() {
+    setLoading(true)
     sessionStorage.setItem('tbb_terms_accepted', '1')
+
+    // If already signed in, save intake + terms now and go straight to booking
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      const goals: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_goals') ?? '[]')
+      const healthFlags: string[] = JSON.parse(sessionStorage.getItem('tbb_intake_health') ?? '[]')
+
+      await fetch('/api/sessions/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: session.user.id, email: session.user.email, goals, healthFlags }),
+      })
+
+      sessionStorage.removeItem('tbb_terms_accepted')
+      sessionStorage.removeItem('tbb_intake_goals')
+      sessionStorage.removeItem('tbb_intake_health')
+
+      router.push('/sessions/book')
+      return
+    }
+
+    // Not signed in — go to signup to create an account
     router.push('/sessions/signup')
   }
 
@@ -161,16 +187,16 @@ export default function SessionsDisclaimerPage() {
 
         <button
           onClick={handleContinue}
-          disabled={!agreedHealth || !agreedTerms}
+          disabled={!agreedHealth || !agreedTerms || loading}
           className="w-full py-4 rounded-full text-sm tracking-[0.15em] uppercase transition-all"
           style={{
             backgroundColor: 'var(--accent)',
             color: 'var(--background)',
             fontFamily: 'var(--font-body)',
-            opacity: agreedHealth && agreedTerms ? 1 : 0.4,
+            opacity: agreedHealth && agreedTerms && !loading ? 1 : 0.4,
           }}
         >
-          I agree — create my account
+          {loading ? 'Saving...' : 'I agree — continue'}
         </button>
 
       </div>

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
     const admin = createAdminClient()
 
-    // Save intake answers
+    // Save intake answers (ignore duplicates — terms update must still succeed)
     await admin.from('client_intake').insert({
       user_id: userId ?? null,
       email,
@@ -19,13 +19,17 @@ export async function POST(req: NextRequest) {
       health_flags: healthFlags,
     })
 
-    // If we have a userId, also stamp terms_accepted_at on the profile via admin
-    // (bypasses RLS so it is guaranteed to persist)
+    // Always stamp terms_accepted_at if we have a userId — this is the critical step
     if (userId) {
-      await admin
+      const { error: updateError } = await admin
         .from('profiles')
         .update({ terms_accepted_at: new Date().toISOString() })
         .eq('id', userId)
+
+      if (updateError) {
+        console.error('Failed to update terms_accepted_at:', updateError)
+        return NextResponse.json({ error: 'Failed to save terms acceptance' }, { status: 500 })
+      }
     }
 
     return NextResponse.json({ ok: true })
