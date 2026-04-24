@@ -21,7 +21,7 @@ async function getMembers() {
   // Get all profiles
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('id, name, age_range, login_count, subscription_tier, created_at, approved_for_sessions')
+    .select('id, name, last_name, age_range, login_count, subscription_tier, created_at, approved_for_sessions')
 
   // Get session counts per user
   const { data: sessions } = await supabase
@@ -36,6 +36,7 @@ async function getMembers() {
       id: user.id,
       email: user.email ?? '—',
       name: profile?.name ?? '—',
+      lastName: profile?.last_name ?? null,
       ageRange: profile?.age_range ?? '—',
       subscriptionTier: profile?.subscription_tier ?? 'free',
       loginCount: profile?.login_count ?? 0,

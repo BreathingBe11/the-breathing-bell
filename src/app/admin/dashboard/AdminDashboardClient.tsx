@@ -15,6 +15,7 @@ interface Member {
   id: string
   email: string
   name: string
+  lastName: string | null
   ageRange: string
   subscriptionTier: string
   loginCount: number
@@ -372,7 +373,7 @@ export default function AdminDashboardClient({
                       cursor: 'pointer',
                     }}
                   >
-                    <td className={cell} style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{m.name}</td>
+                    <td className={cell} style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{m.name}{m.lastName ? ` ${m.lastName}` : ''}</td>
                     <td className={cell} style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>{m.email}</td>
                     <td className={cell} style={{ color: '#7a8a99', fontFamily: 'monospace' }}>{m.ageRange}</td>
                     <td className={cell} style={{ color: '#e8e2d9', fontFamily: 'monospace' }}>{m.sessionCount}</td>
