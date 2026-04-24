@@ -32,6 +32,12 @@ interface ProfileRow {
   subscription_tier: string
 }
 
+interface NoteRow {
+  id: string
+  session_date: string
+  content: string
+}
+
 function calculateStreak(sessions: SessionRow[]): number {
   if (!sessions.length) return 0
   const today = new Date()
@@ -83,10 +89,12 @@ export default function QuietLogClient({
   sessions,
   profile,
   bookings,
+  notes,
 }: {
   sessions: SessionRow[]
   profile: ProfileRow | null
   bookings: BookingRow[]
+  notes: NoteRow[]
 }) {
   const router = useRouter()
   const supabase = createClient()
@@ -525,8 +533,45 @@ export default function QuietLogClient({
                 </div>
               )}
 
+              {/* Notes from Omi */}
+              {notes.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <p
+                    className="text-xs tracking-[0.2em] uppercase"
+                    style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+                  >
+                    Notes from Omi
+                  </p>
+                  {notes.map((note, i) => (
+                    <motion.div
+                      key={note.id}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="flex flex-col gap-3 p-5 rounded-2xl"
+                      style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}
+                    >
+                      <p
+                        className="text-xs tracking-[0.1em] uppercase"
+                        style={{ color: 'var(--accent)', fontFamily: 'var(--font-body)' }}
+                      >
+                        {new Date(note.session_date + 'T00:00:00').toLocaleDateString('en-US', {
+                          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+                        })}
+                      </p>
+                      <p
+                        className="text-sm leading-relaxed"
+                        style={{ color: 'var(--foreground)', fontFamily: 'var(--font-body)', whiteSpace: 'pre-wrap' }}
+                      >
+                        {note.content}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
               {/* Empty state */}
-              {bookings.length === 0 && (
+              {bookings.length === 0 && notes.length === 0 && (
                 <div className="text-center py-16 flex flex-col items-center gap-4">
                   <p
                     className="text-2xl italic"

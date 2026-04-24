@@ -25,6 +25,14 @@ interface Member {
   approvedForSessions: boolean
 }
 
+interface SessionNote {
+  id: string
+  session_date: string
+  content: string
+  created_at: string
+  updated_at: string
+}
+
 interface MemberDetail {
   user: { email: string; createdAt: string | null; lastSignIn: string | null }
   profile: {
@@ -36,6 +44,7 @@ interface MemberDetail {
   intake: { goals: string[]; health_flags: string[]; created_at: string } | null
   appSessions: { id: string; technique: string; domain: string; duration_minutes: number; completed_at: string }[]
   bookings: { id: string; session_type: string; scheduled_at: string | null; canceled_at: string | null; omi_notes: string | null }[]
+  notes: SessionNote[]
 }
 
 function formatDate(iso: string | null) {
@@ -65,6 +74,12 @@ export default function AdminDashboardClient({
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
   const [memberDetail, setMemberDetail] = useState<MemberDetail | null>(null)
   const [memberDetailLoading, setMemberDetailLoading] = useState(false)
+  const [newNoteContent, setNewNoteContent] = useState('')
+  const [newNoteDate, setNewNoteDate] = useState(new Date().toISOString().split('T')[0])
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editNoteContent, setEditNoteContent] = useState('')
+  const [editNoteDate, setEditNoteDate] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
 
   // Blast state
   const [blastSubject, setBlastSubject] = useState('')
@@ -118,6 +133,44 @@ export default function AdminDashboardClient({
       body: JSON.stringify({ approved_user_id: userId }),
     })
     setApprovingUser(null)
+  }
+
+  async function handleAddNote() {
+    if (!selectedMemberId || !newNoteContent.trim()) return
+    setSavingNote(true)
+    const res = await fetch('/api/admin/session-notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: selectedMemberId, sessionDate: newNoteDate, content: newNoteContent }),
+    })
+    if (res.ok) {
+      const note = await res.json()
+      setMemberDetail(d => d ? { ...d, notes: [note, ...d.notes] } : d)
+      setNewNoteContent('')
+      setNewNoteDate(new Date().toISOString().split('T')[0])
+    }
+    setSavingNote(false)
+  }
+
+  async function handleSaveEditNote(id: string) {
+    setSavingNote(true)
+    const res = await fetch(`/api/admin/session-notes/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: editNoteContent, sessionDate: editNoteDate }),
+    })
+    if (res.ok) {
+      const note = await res.json()
+      setMemberDetail(d => d ? { ...d, notes: d.notes.map(n => n.id === id ? note : n) } : d)
+      setEditingNoteId(null)
+    }
+    setSavingNote(false)
+  }
+
+  async function handleDeleteNote(id: string) {
+    if (!confirm('Delete this note?')) return
+    await fetch(`/api/admin/session-notes/${id}`, { method: 'DELETE' })
+    setMemberDetail(d => d ? { ...d, notes: d.notes.filter(n => n.id !== id) } : d)
   }
 
   function sessionTypeLabel(type: string) {
@@ -213,6 +266,9 @@ export default function AdminDashboardClient({
     setSelectedMemberId(id)
     setMemberDetail(null)
     setMemberDetailLoading(true)
+    setNewNoteContent('')
+    setNewNoteDate(new Date().toISOString().split('T')[0])
+    setEditingNoteId(null)
     const res = await fetch(`/api/admin/members/${id}`)
     if (res.ok) setMemberDetail(await res.json())
     setMemberDetailLoading(false)
@@ -805,6 +861,116 @@ export default function AdminDashboardClient({
                     </div>
                   </div>
                 )}
+
+                {/* Session Notes */}
+                <div>
+                  <p className="text-xs uppercase tracking-[0.1em] mb-3" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>Session Notes</p>
+
+                  {/* New note form */}
+                  <div className="flex flex-col gap-2 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#1a2030', border: '1px solid #2a3040' }}>
+                    <input
+                      type="date"
+                      value={newNoteDate}
+                      onChange={e => setNewNoteDate(e.target.value)}
+                      className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                      style={{ backgroundColor: '#0d1117', border: '1px solid #2a3040', color: '#e8e2d9', fontFamily: 'monospace' }}
+                    />
+                    <textarea
+                      value={newNoteContent}
+                      onChange={e => setNewNoteContent(e.target.value)}
+                      placeholder="Write a note — messages, homework, things to remember..."
+                      rows={3}
+                      className="w-full px-2 py-1.5 rounded text-xs outline-none resize-none"
+                      style={{ backgroundColor: '#0d1117', border: '1px solid #2a3040', color: '#e8e2d9', fontFamily: 'monospace' }}
+                    />
+                    <button
+                      onClick={handleAddNote}
+                      disabled={savingNote || !newNoteContent.trim()}
+                      className="text-xs px-3 py-1.5 rounded"
+                      style={{
+                        backgroundColor: 'rgba(42,181,197,0.15)',
+                        color: '#2ab5c5',
+                        border: '1px solid rgba(42,181,197,0.4)',
+                        fontFamily: 'monospace',
+                        opacity: savingNote || !newNoteContent.trim() ? 0.5 : 1,
+                      }}
+                    >
+                      {savingNote ? 'Saving...' : '+ Add note'}
+                    </button>
+                  </div>
+
+                  {/* Existing notes */}
+                  {memberDetail.notes.length === 0 ? (
+                    <p className="text-xs" style={{ color: '#7a8a99', fontFamily: 'monospace' }}>No notes yet.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {memberDetail.notes.map(note => (
+                        <div key={note.id} className="rounded-lg px-3 py-3" style={{ backgroundColor: '#1a2030', border: '1px solid #2a3040' }}>
+                          {editingNoteId === note.id ? (
+                            <div className="flex flex-col gap-2">
+                              <input
+                                type="date"
+                                value={editNoteDate}
+                                onChange={e => setEditNoteDate(e.target.value)}
+                                className="w-full px-2 py-1 rounded text-xs outline-none"
+                                style={{ backgroundColor: '#0d1117', border: '1px solid #2a3040', color: '#e8e2d9', fontFamily: 'monospace' }}
+                              />
+                              <textarea
+                                value={editNoteContent}
+                                onChange={e => setEditNoteContent(e.target.value)}
+                                rows={4}
+                                className="w-full px-2 py-1 rounded text-xs outline-none resize-none"
+                                style={{ backgroundColor: '#0d1117', border: '1px solid #2a3040', color: '#e8e2d9', fontFamily: 'monospace' }}
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleSaveEditNote(note.id)}
+                                  disabled={savingNote}
+                                  className="text-xs px-3 py-1 rounded"
+                                  style={{ backgroundColor: 'rgba(42,181,197,0.15)', color: '#2ab5c5', border: '1px solid rgba(42,181,197,0.4)', fontFamily: 'monospace' }}
+                                >
+                                  {savingNote ? 'Saving...' : 'Save'}
+                                </button>
+                                <button
+                                  onClick={() => setEditingNoteId(null)}
+                                  className="text-xs px-3 py-1 rounded"
+                                  style={{ color: '#7a8a99', border: '1px solid #2a3040', fontFamily: 'monospace' }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <p className="text-xs font-semibold" style={{ color: '#2ab5c5', fontFamily: 'monospace' }}>
+                                  {new Date(note.session_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => { setEditingNoteId(note.id); setEditNoteContent(note.content); setEditNoteDate(note.session_date) }}
+                                    className="text-xs"
+                                    style={{ color: '#7a8a99', fontFamily: 'monospace' }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteNote(note.id)}
+                                    className="text-xs"
+                                    style={{ color: '#f87171', fontFamily: 'monospace' }}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-xs leading-relaxed" style={{ color: '#e8e2d9', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>{note.content}</p>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
               </div>
             )

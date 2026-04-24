@@ -24,12 +24,14 @@ export async function GET(
     { data: intake },
     { data: appSessions },
     { data: bookings },
+    { data: notes },
   ] = await Promise.all([
     admin.auth.admin.getUserById(id),
     admin.from('profiles').select('*').eq('id', id).single(),
     admin.from('client_intake').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     admin.from('sessions').select('id, technique, domain, duration_minutes, completed_at').eq('user_id', id).order('completed_at', { ascending: false }),
     admin.from('bookings').select('*').eq('user_id', id).order('scheduled_at', { ascending: false }),
+    admin.from('session_notes').select('*').eq('user_id', id).order('session_date', { ascending: false }),
   ])
 
   return NextResponse.json({
@@ -42,5 +44,6 @@ export async function GET(
     intake,
     appSessions: appSessions ?? [],
     bookings: bookings ?? [],
+    notes: notes ?? [],
   })
 }

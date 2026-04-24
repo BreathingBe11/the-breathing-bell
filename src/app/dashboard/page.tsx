@@ -16,6 +16,7 @@ export default async function DashboardPage() {
     { data: sessions },
     { data: profile },
     { data: bookings },
+    { data: notes },
   ] = await Promise.all([
     supabase
       .from('sessions')
@@ -33,6 +34,11 @@ export default async function DashboardPage() {
       .eq('user_id', session.user.id)
       .is('canceled_at', null)
       .order('scheduled_at', { ascending: true }),
+    supabase
+      .from('session_notes')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('session_date', { ascending: false }),
   ])
 
   return (
@@ -40,6 +46,7 @@ export default async function DashboardPage() {
       sessions={sessions ?? []}
       profile={profile}
       bookings={bookings ?? []}
+      notes={notes ?? []}
     />
   )
 }
