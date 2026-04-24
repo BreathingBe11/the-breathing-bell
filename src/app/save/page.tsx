@@ -135,8 +135,8 @@ export default function SavePage() {
     // Create profile
     await supabase.from('profiles').insert({
       id: data.user.id,
-      name: firstName.trim() || currentSession.name,
-      last_name: lastName.trim() || null,
+      name: firstName.trim(),
+      last_name: lastName.trim(),
       age_range: currentSession.ageRange,
       subscription_tier: 'free',
       referral_source: referralSource || null,
@@ -326,6 +326,7 @@ export default function SavePage() {
                   placeholder="First name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  required
                   className="flex-1 px-4 py-3.5 rounded-xl text-base outline-none"
                   style={{
                     backgroundColor: 'var(--surface-2)',
@@ -341,6 +342,7 @@ export default function SavePage() {
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
+                  required
                   className="flex-1 px-4 py-3.5 rounded-xl text-base outline-none"
                   style={{
                     backgroundColor: 'var(--surface-2)',
@@ -391,6 +393,7 @@ export default function SavePage() {
               <select
                 value={referralSource}
                 onChange={(e) => setReferralSource(e.target.value)}
+                required
                 className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
                 style={{
                   backgroundColor: 'var(--surface-2)',

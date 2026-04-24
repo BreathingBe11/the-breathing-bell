@@ -91,7 +91,7 @@ export default function SessionsSignupPage() {
     await supabase.from('profiles').insert({
       id: data.user.id,
       name: firstName.trim(),
-      last_name: lastName.trim() || null,
+      last_name: lastName.trim(),
       age_range: '18-29', // Default — not collected in sessions flow
       subscription_tier: 'free',
       referral_source: 'sessions-page',
@@ -175,6 +175,7 @@ export default function SessionsSignupPage() {
                 placeholder="Last name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                required
                 className="flex-1 px-4 py-3.5 rounded-xl text-base outline-none"
                 style={{
                   backgroundColor: 'var(--surface-2)',
