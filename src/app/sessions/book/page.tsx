@@ -6,6 +6,12 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
+async function signOut() {
+  const supabase = createClient()
+  await supabase.auth.signOut()
+  window.location.href = '/'
+}
+
 const SESSIONS = [
   {
     title: 'Discovery Call',
@@ -86,13 +92,22 @@ export default function SessionsBookPage() {
 
       <div className="relative z-10 w-full max-w-2xl">
 
-        <Link
-          href="/sessions"
-          className="text-xs tracking-[0.2em] uppercase mb-10 inline-block"
-          style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
-        >
-          ← Omi Sessions
-        </Link>
+        <div className="flex items-center justify-between mb-10">
+          <Link
+            href="/sessions"
+            className="text-xs tracking-[0.2em] uppercase"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            ← Omi Sessions
+          </Link>
+          <button
+            onClick={signOut}
+            className="text-xs tracking-[0.15em] uppercase"
+            style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)' }}
+          >
+            Sign out
+          </button>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
